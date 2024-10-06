@@ -16,8 +16,8 @@ const App: FunctionComponent = () => {
 			if (favicon) {
 				favicon.href =
 					theme === "dark"
-						? "./logoDark/favicon.ico" // Karanlık tema için favicon
-						: "./logoLight/favicon.ico"; // Açık tema için favicon
+						? "%PUBLIC_URL%/logoDark/favicon.ico" // Karanlık tema için favicon
+						: "%PUBLIC_URL%/logoLight/favicon.ico"; // Açık tema için favicon
 			}
 			const appleTouchIcon = document.getElementById(
 				"apple-touch-icon"
@@ -25,8 +25,8 @@ const App: FunctionComponent = () => {
 			if (appleTouchIcon) {
 				appleTouchIcon.href =
 					theme === "dark"
-						? "./logoDark/apple-touch-icon.png" // Karanlık tema için favicon
-						: "./logoLight/apple-touch-icon.png"; // Açık tema için favicon
+						? "%PUBLIC_URL%/logoDark/apple-touch-icon.png" // Karanlık tema için favicon
+						: "%PUBLIC_URL%/logoLight/apple-touch-icon.png"; // Açık tema için favicon
 			}
 			const metaThemeColor = document.querySelector(
 				"meta[name=theme-color]"
