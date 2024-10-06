@@ -60,7 +60,7 @@ const App: FunctionComponent = () => {
 	const router = createBrowserRouter(
 		createRoutesFromElements(
 			<Route element={<Layout />}>
-				<Route index element={<Main />}></Route>
+				<Route index path="/" element={<Main />}></Route>
 				<Route path="about" element={<About />}></Route>
 				<Route path="career" element={<Career />}></Route>
 				<Route path="projects" element={<Projects />}></Route>
