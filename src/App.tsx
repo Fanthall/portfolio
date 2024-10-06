@@ -1,7 +1,7 @@
 import { Spinner } from "@nextui-org/react";
 import React, { FunctionComponent, useEffect } from "react";
 import {
-	createBrowserRouter,
+	createHashRouter,
 	createRoutesFromElements,
 	Route,
 	RouterProvider,
@@ -57,7 +57,7 @@ const App: FunctionComponent = () => {
 				.removeEventListener("change", handle);
 		};
 	}, []);
-	const router = createBrowserRouter(
+	const router = createHashRouter(
 		createRoutesFromElements(
 			<Route element={<Layout />}>
 				<Route index path="/" element={<Main />}></Route>
