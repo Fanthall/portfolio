@@ -47,7 +47,7 @@ const Header: FunctionComponent<HeaderProps> = () => {
 								navigate("/");
 							}}
 						/>
-						<div className="absolute top-2 right-2 sm:hidden">
+						<div className="absolute top-2 right-4 sm:hidden">
 							<Button
 								radius="none"
 								size="sm"
@@ -113,7 +113,7 @@ const Header: FunctionComponent<HeaderProps> = () => {
 					</div>
 
 					{openMenu && (
-						<div className="w-[50%]  h-full absolute right-0 top-0 flex sm:hidden flex-col justify-start items-center dark:bg-black bg-white z-50 pt-20">
+						<div className="w-[50%]  h-full absolute right-0 top-0 flex sm:hidden flex-col justify-start items-center dark:bg-custom-dark-bg bg-custom-light-bg z-50 pt-20">
 							<div className="w-full mb-8 h-[60px] flex flex-row justify-center  items-center">
 								<Image
 									removeWrapper

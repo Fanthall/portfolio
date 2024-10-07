@@ -29,7 +29,9 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
 	return (
 		<ThemeContext.Provider value={{ theme, toggleTheme }}>
-			<NextUIProvider className={`w-full h-full flex ${theme}`}>
+			<NextUIProvider
+				className={`w-full h-full flex ${theme} overflow-auto p-[50px]`}
+			>
 				{children}
 			</NextUIProvider>
 		</ThemeContext.Provider>

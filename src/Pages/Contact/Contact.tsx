@@ -51,9 +51,9 @@ const Contact: FunctionComponent<ContactProps> = (props) => {
 						</div>
 
 						<div className="w-full lg:w-[30%] h-full flex flex-col justify-start items-start mt-48 ">
-							<div className="w-full  border-2 border-default-200  rounded-br-xl">
+							<div className="w-full  border-2 border-default-400 rounded-br-xl">
 								<form
-									className="w-full border-2 p-8 rounded-br-4xl shadow-lg"
+									className="w-full border-2 p-8 rounded-br-4xl border-default-400 shadow-lg"
 									style={{ borderBottomRightRadius: 50 }}
 								>
 									<Input

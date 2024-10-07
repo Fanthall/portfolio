@@ -11,9 +11,9 @@ const AboutPanels: FunctionComponent<AboutPanelsProps> = (props) => {
 	return (
 		<div
 			className={`basis-12/12 md:basis-6/12 xl:basis-3/12 service group relative flex px-3 py-5 rounded-md duration-300 before:absolute before:left-7 before:top-14 
-                before:h-[calc(100%-80px)] before:w-[1px] before:bg-gray-300 
+                before:h-[calc(100%-80px)] before:w-[1px] before:bg-gray-800 dark:before:bg-gray-300 
                 after:absolute after:left-6 after:bottom-4 after:h-[10px] 
-                after:w-[10px] after:rounded-full after:bg-gray-300 ${props.className}`}
+                after:w-[10px] after:rounded-full after:bg-gray-800 dark:after:bg-gray-300 ${props.className}`}
 			style={props.style}
 		>
 			<div className="mr-4 relative flex-shrink-0 self-start w-[50px] md:w-auto ">
