@@ -14,7 +14,9 @@ const SocialMedia: FunctionComponent<SocialMediaProps> = (props) => {
 	return (
 		<div className="flex items-center mt-10">
 			<h5 className="text-sm md:text-base mr-5 leading-none">
-				{languageContext?.language === "tr" ? "Sosyal Medya:" : "Share:"}
+				{languageContext?.language === "tr"
+					? "Sosyal Medya:"
+					: "Social Media:"}
 			</h5>
 			<ul className="flex space-x-4">
 				{props.instagram && (
