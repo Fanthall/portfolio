@@ -1,0 +1,28 @@
+# ŞABLON — yeni site eklemek için bu dosyayı kopyala:
+#   cp example-static.caddyfile.template my-site.caddyfile
+# Sonra düzenle, Caddy'i reload et.
+#
+# Bu örnek 3 tipik senaryo gösterir; sadece sana uygun olanı bırak.
+
+# --- Senaryo 1: Reverse proxy başka bir Docker container'ına ----------------
+# Kendi compose'unda bir app container'ın varsa (web network'üne bağlı):
+#
+# vault.your-domain.com {
+#     encode zstd gzip
+#     reverse_proxy passwordmanagement-api:3200
+# }
+
+# --- Senaryo 2: Static HTML dosyaları servis et ------------------------------
+# /opt/infra/www/site-x/ klasörüne static dosyalar koy, root et:
+#
+# site-x.your-domain.com {
+#     root * /etc/caddy/www/site-x
+#     file_server
+#     encode zstd gzip
+# }
+# (docker-compose.yml'ye ek volume mount: - ./www:/etc/caddy/www:ro)
+
+# --- Senaryo 3: Sadece redirect (eski domain → yeni domain) -----------------
+# old-domain.com, www.old-domain.com {
+#     redir https://new-domain.com{uri} permanent
+# }

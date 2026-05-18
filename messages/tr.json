@@ -1,0 +1,32 @@
+{
+	"header": {
+		"home": "Anasayfa",
+		"about": "Hakkımda",
+		"career": "Kariyerim",
+		"projects": "Projelerim",
+		"contact": "İletişim"
+	},
+	"home": {
+		"title": "Ben Sezer Demir DEDEK",
+		"subtitle": "React.js Geliştirici"
+	},
+	"common": {
+		"language": "Dil",
+		"theme": "Tema",
+		"viewDetails": "Detayı gör",
+		"backToProjects": "Projelere dön",
+		"openInNewTab": "Yeni sekmede aç"
+	},
+	"contact": {
+		"name": "Ad soyad",
+		"email": "E-posta",
+		"subject": "Konu",
+		"message": "Mesaj",
+		"send": "Gönder",
+		"success": "Mesaj gönderildi, teşekkürler.",
+		"error": "Mesaj gönderilemedi. Lütfen tekrar deneyin."
+	},
+	"footer": {
+		"copyright": "© {year} Sezer Demir DEDEK"
+	}
+}

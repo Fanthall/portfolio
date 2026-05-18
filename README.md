@@ -1,46 +1,109 @@
-# Getting Started with Create React App
+# Portfolio — Sezer Demir DEDEK
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Next.js 15 + PostgreSQL + Prisma + shadcn/ui üzerine kurulu, admin panelinden tam yönetilebilen, iki dilli (TR/EN) kişisel portföy uygulaması.
 
-## Available Scripts
+## Özellikler
 
-In the project directory, you can run:
+- **Public site**: Hakkımda, Kariyer (şirkete göre gruplanmış timeline + aktif iş vurgusu), Projeler (her biri kendi detay sayfasında), İletişim (form → admin inbox)
+- **Admin paneli** (`/admin`): tüm içerik DB üzerinden tarayıcıdan yönetilir — site meta, biyografi, kariyer, projeler, sosyal linkler, mesajlar, per-page SEO
+- **Dosya upload**: profil fotoğrafı + proje kapak/galeri görselleri + HTML demo (zip, iframe ile yayınlanır) + Electron installer (.exe/.dmg vs.)
+- **i18n**: cookie-tabanlı TR/EN switch
+- **SEO**: dinamik `robots.txt` + `sitemap.xml`, per-page meta override, OG/Twitter cards, JSON-LD (Person + WebSite), canonical URL'ler
+- **Auth**: JWT in HTTPOnly cookie (bcryptjs), `/admin/*` middleware koruması
+- **Tema**: cookie-tabanlı dark/light, modern slate + violet paleti
 
-### `npm start`
+## Hızlı başlangıç (yerel geliştirme)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```bash
+# 0. Bağımlılıkları kur
+npm install
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+# 1. Postgres'i Docker'da kaldır (port 5437)
+npm run db:up
 
-### `npm test`
+# 2. Env dosyasını oluştur
+cp .env.example .env
+# (varsayılan değerler local için yeterli)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# 3. Schema'yı uygula + bootstrap içerik
+npm run prisma:migrate
+npm run prisma:seed
 
-### `npm run build`
+# 4. Dev server (port 3001)
+npm run dev
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Açılınca:
+- Public: http://localhost:3001
+- Admin login: http://localhost:3001/admin/login
+  - Default: `admin@portfolio.local` / `admin-local-dev` (`.env`'den)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Stack
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| Katman | Teknoloji |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Dil | TypeScript strict |
+| UI | shadcn/ui (komponentler `components/ui/`) + Tailwind |
+| i18n | next-intl |
+| DB | PostgreSQL 16 (Docker) |
+| ORM | Prisma 6 |
+| Auth | JWT HTTPOnly cookie + bcryptjs |
+| Validation | zod |
+| Form | react-hook-form |
+| Icon | lucide-react |
+| Zip | unzipper (demo upload) |
 
-### `npm run eject`
+## Klasör yapısı
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Detaylı klasör haritası ve sözleşmeler için **[CLAUDE.md](CLAUDE.md)**'ye bak.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Production deploy
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+VPS'inde production yayına almak için (aynı VPS'te birden fazla site host edilebilen **multi-site topology** kullanılır — merkezi Caddy reverse proxy + per-site Docker stack):
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+1. **[prod-deploy-steps.md](prod-deploy-steps.md)** — Analiz, kararlar, provider karşılaştırma (Contabo/Hetzner/Oracle/...), maliyet, risk register, day-2 operations
+2. **[DEPLOY.md](DEPLOY.md)** — Komut komut adım adım uygulama rehberi (önce infra, sonra portfolio)
+3. **[MULTI-SITE.md](MULTI-SITE.md)** — Topology + aynı VPS'e yeni site ekleme prosedürü
+4. **[infra-example/](infra-example/)** — Merkezi Caddy reverse proxy template (VPS'te `/opt/infra/` olarak kopyalanır)
 
-## Learn More
+Özet: Provider seçimi sende (Contabo VPS S ~€5, Hetzner CX22 ~€5, Oracle Free $0 ARM); Docker + merkezi Caddy + auto SSL. Toplam ilk yıl tipik €70-80 (tek site). Aynı VPS'e ek site eklemek $0/yıl ekstra.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Başka bir AI ajanına devretmek istersen
+**[AI-DEPLOY-PROMPT.md](AI-DEPLOY-PROMPT.md)** — Claude/Codex/Gemini gibi başka bir AI'a kopyala-yapıştır verebileceğin handoff talimatı.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Dokümantasyon haritası
+
+| Dosya / klasör | Amaç |
+|---|---|
+| `README.md` | Bu dosya — proje özeti + hızlı başlangıç |
+| `CLAUDE.md` | Geliştirme için kapsamlı bağlam (klasör haritası, veri modeli, sözleşmeler, prensipler) |
+| `DEPLOY.md` | Production deploy operasyonel rehber (komut bloklarıyla) |
+| `prod-deploy-steps.md` | Deploy analitik kılavuz (kararlar, maliyet, risk, checklist) |
+| `MULTI-SITE.md` | Aynı VPS'te birden fazla site host etme topology'si + ek site ekleme |
+| `OPERATIONS.md` | Çalışan sistemi izleme: state dosyaları, komut → state etkisi, müdahale öncesi okuma kuralı |
+| `infra-example/` | Merkezi Caddy reverse proxy template + per-site config örnekleri |
+| `AI-DEPLOY-PROMPT.md` | Başka bir AI ajanına deploy işini devretmek için hazır prompt'lar |
+| `scripts/generate-state.sh` | VPS'te sistem durumu özetleyen state dosyası üretici (deploy/backup sonrası otomatik çalışır) |
+| `Dockerfile`, `docker-compose.production.yml` | Portfolio production deploy artifacts |
+| `deploy.sh`, `db-backup.sh` | Deploy ve backup scriptleri |
+| `.env.example` | Geliştirme için env şablonu |
+| `.env.production.example` | Production için env şablonu |
+
+## Komutlar
+
+| Komut | Açıklama |
+|---|---|
+| `npm run dev` | Dev server (port 3001) |
+| `npm run build` | Production build |
+| `npm run start` | Production server |
+| `npm run lint` | ESLint |
+| `npm run type-check` | TypeScript validation |
+| `npm run db:up` / `db:down` | Local Postgres Docker |
+| `npm run prisma:migrate` | Yeni migration üret + uygula |
+| `npm run prisma:seed` | Idempotent bootstrap seed |
+| `npm run bootstrap` | `db:up + migrate + seed` zinciri |
+
+## Lisans
+
+MIT (kişisel proje)

@@ -5,19 +5,40 @@
 /.pnp
 .pnp.js
 
+# next.js
+/.next/
+/out/
+next-env.d.ts
+tsconfig.tsbuildinfo
+
 # testing
 /coverage
 
 # production
 /build
+/dist
+
+# uploads / runtime artifacts
+/public/uploads/
+/public/demos/
+/public/downloads/
 
 # misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+*.log
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# env
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Otomatik üretilen state dosyaları (VPS-only)
+DEPLOY-STATE.md
+INFRA-STATE.md
+
+# Backup'lar
+/backups/
+
+# vercel
+.vercel

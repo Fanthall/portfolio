@@ -1,0 +1,31 @@
+# Centralized reverse proxy for the VPS.
+# Aynı VPS'te birden fazla site host etmek için Caddy ayrı bir stack.
+# Her site (portfolio, vault, vs.) kendi compose'unda çalışır ve `web` network'üne bağlanır.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: infra-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3 (QUIC)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites:/etc/caddy/sites:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - web
+
+volumes:
+  caddy-data:
+  caddy-config:
+
+networks:
+  web:
+    # Bu network başka projeler tarafından `external: true` ile referans verilir.
+    # Bu compose ilk kalktığında oluşur; başka projeler `up` yapmadan önce bu çalışmalı.
+    name: web
+    driver: bridge

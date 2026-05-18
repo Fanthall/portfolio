@@ -1,0 +1,22 @@
+# Centralized Caddyfile — global ayarlar + per-site import.
+#
+# Yeni site eklemek için:
+#   1. sites/<isim>.caddyfile dosyası oluştur
+#   2. `docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile`
+#
+# import directive sites/ klasöründeki tüm .caddyfile uzantılı dosyaları okur.
+
+{
+    # Let's Encrypt sertifika süresi yaklaşınca bu adrese mail gelir.
+    email {$ADMIN_EMAIL}
+
+    # admin off  # Caddy admin API'sini tamamen kapatmak istersen yorumdan çıkar
+}
+
+# Per-site definitions
+import sites/*.caddyfile
+
+# Default fallback — tanımsız domain isteği gelirse 421 dön
+:80, :443 {
+    respond "421 Misdirected Request" 421
+}

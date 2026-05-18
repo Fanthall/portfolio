@@ -1,0 +1,32 @@
+{
+	"header": {
+		"home": "Home",
+		"about": "About",
+		"career": "Career",
+		"projects": "Projects",
+		"contact": "Contact"
+	},
+	"home": {
+		"title": "I'm Sezer Demir DEDEK",
+		"subtitle": "React.js Developer"
+	},
+	"common": {
+		"language": "Language",
+		"theme": "Theme",
+		"viewDetails": "View details",
+		"backToProjects": "Back to projects",
+		"openInNewTab": "Open in new tab"
+	},
+	"contact": {
+		"name": "Full name",
+		"email": "Email",
+		"subject": "Subject",
+		"message": "Message",
+		"send": "Send",
+		"success": "Message sent, thank you.",
+		"error": "Could not send message. Please try again."
+	},
+	"footer": {
+		"copyright": "© {year} Sezer Demir DEDEK"
+	}
+}
