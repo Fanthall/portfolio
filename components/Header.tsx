@@ -1,9 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileNav } from "@/components/MobileNav";
+import { NavLinks } from "@/components/NavLinks";
 
 interface HeaderProps {
 	theme: "light" | "dark";
@@ -38,17 +39,7 @@ export async function Header({ theme }: HeaderProps) {
 					/>
 					<span className="text-base hidden sm:inline">Sezer Demir DEDEK</span>
 				</Link>
-				<nav className="hidden md:flex items-center gap-1">
-					{navItems.map((item) => (
-						<Link
-							key={item.href}
-							href={item.href}
-							className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-						>
-							{item.label}
-						</Link>
-					))}
-				</nav>
+				<NavLinks items={navItems} />
 				<div className="flex items-center gap-1">
 					<LanguageToggle />
 					<ThemeToggle current={theme} />

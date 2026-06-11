@@ -7,11 +7,8 @@ const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
   serverExternalPackages: ["unzipper"],
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "**" },
-    ],
-  },
+  // Tüm görseller local (public/assets, public/uploads) — remote pattern izni yok.
+  // Harici CDN gerekirse hostname buraya explicit eklenir.
 };
 
 export default withNextIntl(nextConfig);

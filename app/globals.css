@@ -76,7 +76,7 @@
 	}
 	body {
 		@apply bg-background text-foreground;
-		font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+		/* Font ailesi next/font (Inter) ile app/layout.tsx'ten geliyor */
 		font-feature-settings: "rlig" 1, "calt" 1;
 	}
 

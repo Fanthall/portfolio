@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { parseSkills } from "@/lib/skills";
 import { AdminAboutForm } from "@/components/admin/AdminAboutForm";
 
 export const metadata = { title: "Hakkımda — Admin" };
@@ -34,6 +35,7 @@ export default async function AdminAboutPage() {
 					linkedin: socialLinks.linkedin ?? "",
 					instagram: socialLinks.instagram ?? "",
 					gmail: socialLinks.gmail ?? "",
+					skills: parseSkills(about?.skills),
 				}}
 			/>
 		</div>

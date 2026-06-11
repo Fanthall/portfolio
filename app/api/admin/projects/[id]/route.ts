@@ -29,6 +29,7 @@ const patchSchema = z.object({
 	downloadUrl: z.string().max(500).nullable().optional(),
 	videoUrl: z.string().max(500).nullable().optional(),
 	repoUrl: z.string().max(500).nullable().optional(),
+	tags: z.array(z.string().min(1).max(40)).max(12).optional(),
 	isFeatured: z.boolean().optional(),
 	order: z.number().int().min(0).max(1000).optional(),
 });
@@ -87,6 +88,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 	if (d.downloadUrl !== undefined) data.downloadUrl = emptyToNull(d.downloadUrl);
 	if (d.videoUrl !== undefined) data.videoUrl = emptyToNull(d.videoUrl);
 	if (d.repoUrl !== undefined) data.repoUrl = emptyToNull(d.repoUrl);
+	if (d.tags !== undefined) data.tags = d.tags.map((t) => t.trim()).filter(Boolean);
 	if (d.isFeatured !== undefined) data.isFeatured = d.isFeatured;
 	if (d.order !== undefined) data.order = d.order;
 

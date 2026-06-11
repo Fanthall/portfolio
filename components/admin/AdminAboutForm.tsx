@@ -3,12 +3,19 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Save, Upload, Image as ImageIcon, X } from "lucide-react";
+import { Plus, Save, Trash2, Upload, Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { SkillGroup } from "@/lib/skills";
+
+interface SkillGroupDraft {
+	titleTr: string;
+	titleEn: string;
+	itemsText: string;
+}
 
 interface InitialValues {
 	siteTitle: string;
@@ -22,6 +29,7 @@ interface InitialValues {
 	linkedin: string;
 	instagram: string;
 	gmail: string;
+	skills: SkillGroup[];
 }
 
 interface AdminAboutFormProps {
@@ -37,7 +45,17 @@ export function AdminAboutForm({ initial }: AdminAboutFormProps) {
 	const [status, setStatus] = useState<FormStatus>("idle");
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<"tr" | "en">("tr");
+	const [skillGroups, setSkillGroups] = useState<SkillGroupDraft[]>(
+		initial.skills.map((g) => ({
+			titleTr: g.titleTr,
+			titleEn: g.titleEn,
+			itemsText: g.items.join(", "),
+		})),
+	);
 	const [_isPending, startTransition] = useTransition();
+
+	const updateSkillGroup = (index: number, patch: Partial<SkillGroupDraft>) =>
+		setSkillGroups((cur) => cur.map((g, i) => (i === index ? { ...g, ...patch } : g)));
 
 	const handleFilePick = () => fileInputRef.current?.click();
 
@@ -88,6 +106,17 @@ export function AdminAboutForm({ initial }: AdminAboutFormProps) {
 			bioTr: String(data.get("bioTr") ?? "").trim(),
 			bioEn: String(data.get("bioEn") ?? "").trim(),
 			photoUrl: photoUrl ?? null,
+			skills: skillGroups
+				.map((g) => ({
+					titleTr: g.titleTr.trim(),
+					titleEn: g.titleEn.trim(),
+					items: g.itemsText
+						.split(",")
+						.map((s) => s.trim())
+						.filter(Boolean)
+						.slice(0, 20),
+				}))
+				.filter((g) => g.titleTr && g.titleEn && g.items.length > 0),
 			socialLinks: {
 				github: String(data.get("github") ?? "").trim(),
 				linkedin: String(data.get("linkedin") ?? "").trim(),
@@ -252,6 +281,79 @@ export function AdminAboutForm({ initial }: AdminAboutFormProps) {
 							</div>
 						</div>
 					</div>
+				</CardContent>
+			</Card>
+
+			{/* Skills */}
+			<Card>
+				<CardContent className="p-6 space-y-4">
+					<div className="flex items-center justify-between">
+						<div>
+							<Label className="text-sm font-semibold">Beceriler</Label>
+							<p className="text-xs text-muted-foreground mt-1">
+								Hakkımda sayfasındaki beceri grupları. Maddeleri virgülle ayır. Hiç grup
+								kalmazsa varsayılan liste gösterilir.
+							</p>
+						</div>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							disabled={skillGroups.length >= 8}
+							onClick={() =>
+								setSkillGroups((cur) => [...cur, { titleTr: "", titleEn: "", itemsText: "" }])
+							}
+						>
+							<Plus /> Grup ekle
+						</Button>
+					</div>
+					{skillGroups.map((group, index) => (
+						<div key={index} className="rounded-lg border p-4 space-y-3">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+								<div className="space-y-2">
+									<Label htmlFor={`skill-title-tr-${index}`}>Grup başlığı (TR)</Label>
+									<Input
+										id={`skill-title-tr-${index}`}
+										value={group.titleTr}
+										maxLength={60}
+										onChange={(e) => updateSkillGroup(index, { titleTr: e.target.value })}
+										placeholder="Front-End"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor={`skill-title-en-${index}`}>Group title (EN)</Label>
+									<Input
+										id={`skill-title-en-${index}`}
+										value={group.titleEn}
+										maxLength={60}
+										onChange={(e) => updateSkillGroup(index, { titleEn: e.target.value })}
+										placeholder="Front-End"
+									/>
+								</div>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor={`skill-items-${index}`}>
+									Maddeler{" "}
+									<span className="text-xs text-muted-foreground">(virgülle ayır, en çok 20)</span>
+								</Label>
+								<Input
+									id={`skill-items-${index}`}
+									value={group.itemsText}
+									onChange={(e) => updateSkillGroup(index, { itemsText: e.target.value })}
+									placeholder="React.js, TypeScript, Next.js"
+								/>
+							</div>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="text-destructive hover:text-destructive"
+								onClick={() => setSkillGroups((cur) => cur.filter((_, i) => i !== index))}
+							>
+								<Trash2 /> Grubu kaldır
+							</Button>
+						</div>
+					))}
 				</CardContent>
 			</Card>
 

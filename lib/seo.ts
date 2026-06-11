@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import type { PageKey } from "@prisma/client";
-import { cookies } from "next/headers";
+import { getLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "@/i18n/request";
-import { getSiteUrl, PAGE_PATHS, type PageKeyValue } from "@/lib/site";
-
-const LOCALE_COOKIE = "locale";
+import { getAboutContent } from "@/lib/about";
+import type { Locale } from "@/i18n/routing";
+import {
+	buildLanguageAlternates,
+	getSiteUrl,
+	localizeUrl,
+	PAGE_PATHS,
+	type PageKeyValue,
+} from "@/lib/site";
 
 interface PageDefaults {
 	titleTr: string;
@@ -49,15 +54,6 @@ const PAGE_DEFAULTS: Record<PageKey, PageDefaults> = {
 	},
 };
 
-async function getLocaleFromCookies(): Promise<Locale> {
-	const store = await cookies();
-	const value = store.get(LOCALE_COOKIE)?.value;
-	if (value && (SUPPORTED_LOCALES as readonly string[]).includes(value)) {
-		return value as Locale;
-	}
-	return DEFAULT_LOCALE;
-}
-
 interface GetPageMetadataOptions {
 	canonicalPath?: string;
 	ogImage?: string | null;
@@ -68,9 +64,9 @@ export async function getPageMetadata(
 	options: GetPageMetadataOptions = {},
 ): Promise<Metadata> {
 	const [locale, pageSeo, about] = await Promise.all([
-		getLocaleFromCookies(),
+		getLocale() as Promise<Locale>,
 		prisma.pageSeo.findUnique({ where: { pageKey } }),
-		prisma.aboutContent.findUnique({ where: { id: 1 } }),
+		getAboutContent(),
 	]);
 
 	const defaults = PAGE_DEFAULTS[pageKey];
@@ -82,13 +78,18 @@ export async function getPageMetadata(
 		(locale === "tr" ? defaults.descriptionTr : defaults.descriptionEn) ||
 		about?.siteDescription?.trim() ||
 		"";
-	const ogImage = pageSeo?.ogImage ?? options.ogImage ?? about?.photoUrl ?? null;
+	// Öncelik: admin SEO override → çağıran sayfa → üretilmiş markalı görsel
+	// (app/opengraph-image.tsx). Sayfa openGraph bloğu kök dosya-konvansiyonunu
+	// ezdiği için fallback burada explicit verilir.
+	const ogImage = pageSeo?.ogImage ?? options.ogImage ?? "/opengraph-image";
 
 	const siteTitle = about?.siteTitle?.trim() || "Sezer Demir DEDEK";
 	const base = getSiteUrl();
 	const canonicalPath =
 		options.canonicalPath ?? PAGE_PATHS[pageKey as PageKeyValue] ?? "/";
-	const canonicalUrl = canonicalPath === "/" ? base : `${base}${canonicalPath}`;
+	// Canonical aktif dilin URL'i; hreflang her iki dil + x-default (TR)
+	const canonicalUrl = localizeUrl(canonicalPath, locale);
+	const languageAlternates = buildLanguageAlternates(canonicalPath);
 
 	const ogImageAbsolute = ogImage
 		? ogImage.startsWith("http")
@@ -103,6 +104,7 @@ export async function getPageMetadata(
 		description,
 		alternates: {
 			canonical: canonicalUrl,
+			languages: languageAlternates,
 		},
 		robots: noIndex
 			? { index: false, follow: false, googleBot: { index: false, follow: false } }
@@ -123,6 +125,7 @@ export async function getPageMetadata(
 			url: canonicalUrl,
 			siteName: siteTitle,
 			locale: locale === "tr" ? "tr_TR" : "en_US",
+			alternateLocale: locale === "tr" ? "en_US" : "tr_TR",
 			type: "website",
 			images: ogImageAbsolute ? [{ url: ogImageAbsolute }] : undefined,
 		},

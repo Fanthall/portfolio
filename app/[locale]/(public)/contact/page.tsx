@@ -1,10 +1,9 @@
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Github, Instagram, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { getAboutContent } from "@/lib/about";
 import { ContactForm } from "@/components/ContactForm";
 import { getPageMetadata } from "@/lib/seo";
-import type { Locale } from "@/i18n/request";
 
 export const generateMetadata = () => getPageMetadata("CONTACT");
 
@@ -17,9 +16,8 @@ interface SocialLinks {
 }
 
 export default async function ContactPage() {
-	const locale = (await getLocale()) as Locale;
-	const t = await getTranslations("header");
-	const about = await prisma.aboutContent.findUnique({ where: { id: 1 } });
+	const t = await getTranslations();
+	const about = await getAboutContent();
 	const socials = (about?.socialLinks ?? {}) as SocialLinks;
 
 	const directLinks = [
@@ -32,20 +30,16 @@ export default async function ContactPage() {
 	return (
 		<div className="container mx-auto px-4 py-12 md:py-20 max-w-3xl animate-fade-in">
 			<h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
-				{t("contact")}
+				{t("header.contact")}
 			</h1>
-			<p className="text-muted-foreground mb-10">
-				{locale === "tr"
-					? "Aşağıdaki formdan veya doğrudan kanallardan ulaşabilirsin."
-					: "You can use the form below or reach out directly via the channels."}
-			</p>
+			<p className="text-muted-foreground mb-10">{t("contact.intro")}</p>
 
 			<div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-10">
 				<ContactForm />
 
 				<aside className="space-y-2">
 					<h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-						{locale === "tr" ? "Direkt iletişim" : "Direct contact"}
+						{t("contact.direct")}
 					</h2>
 					<ul className="space-y-2">
 						{directLinks.map((link) => (

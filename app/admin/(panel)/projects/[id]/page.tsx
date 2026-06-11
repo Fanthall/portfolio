@@ -38,6 +38,7 @@ export default async function EditProjectPage({ params }: PageProps) {
 		downloadUrl: project.downloadUrl ?? "",
 		videoUrl: project.videoUrl ?? "",
 		repoUrl: project.repoUrl ?? "",
+		tags: project.tags,
 		isFeatured: project.isFeatured,
 		order: project.order,
 	};

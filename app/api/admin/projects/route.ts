@@ -31,6 +31,7 @@ const createSchema = z.object({
 	downloadUrl: z.string().max(500).nullable().optional(),
 	videoUrl: z.string().max(500).nullable().optional(),
 	repoUrl: z.string().max(500).nullable().optional(),
+	tags: z.array(z.string().min(1).max(40)).max(12).optional(),
 	isFeatured: z.boolean().optional(),
 	order: z.number().int().min(0).max(1000).optional(),
 });
@@ -81,6 +82,7 @@ export async function POST(request: Request) {
 			downloadUrl: emptyToNull(parsed.data.downloadUrl),
 			videoUrl: emptyToNull(parsed.data.videoUrl),
 			repoUrl: emptyToNull(parsed.data.repoUrl),
+			tags: (parsed.data.tags ?? []).map((t) => t.trim()).filter(Boolean),
 			isFeatured: parsed.data.isFeatured ?? false,
 			order: parsed.data.order ?? 0,
 		},

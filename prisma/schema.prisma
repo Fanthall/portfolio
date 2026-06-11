@@ -24,6 +24,8 @@ model AboutContent {
   bioEn           String
   photoUrl        String?
   socialLinks     Json     @default("{}")
+  /// Beceri grupları: [{ titleTr, titleEn, items: string[] }] — null ise koddaki default kullanılır
+  skills          Json?
   siteTitle       String?
   siteDescription String?
   updatedAt       DateTime @updatedAt
@@ -67,6 +69,7 @@ model Project {
   downloadUrl String?
   videoUrl    String?
   repoUrl     String?
+  tags        String[]       @default([])
   isFeatured  Boolean        @default(false)
   order       Int            @default(0)
   createdAt   DateTime       @default(now())

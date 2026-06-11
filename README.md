@@ -2,6 +2,8 @@
 
 Next.js 15 + PostgreSQL + Prisma + shadcn/ui üzerine kurulu, admin panelinden tam yönetilebilen, iki dilli (TR/EN) kişisel portföy uygulaması.
 
+> **English Summary** — A bilingual (TR/EN) personal portfolio built on Next.js 15 (App Router), PostgreSQL + Prisma, and shadcn/ui. Every piece of content — about, career timeline, projects, social links, contact-form inbox, per-page SEO — is editable from a built-in admin panel at `/admin`. Supports image uploads, embedded HTML demos (zip upload → iframe), and installer downloads (Electron `.exe`/`.dmg`). Server-component-first rendering, JWT-in-HTTPOnly-cookie auth, cookie-based locale + theme switching, dynamic `robots.txt` and `sitemap.xml`, OG/Twitter cards, and JSON-LD structured data.
+
 ## Özellikler
 
 - **Public site**: Hakkımda, Kariyer (şirkete göre gruplanmış timeline + aktif iş vurgusu), Projeler (her biri kendi detay sayfasında), İletişim (form → admin inbox)

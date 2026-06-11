@@ -1,7 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
+import NextLink from "next/link";
 import { Github, Instagram, Linkedin, Mail } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { Link } from "@/i18n/navigation";
+import { getAboutContent } from "@/lib/about";
 
 interface SocialLinks {
 	github?: string;
@@ -12,10 +13,17 @@ interface SocialLinks {
 }
 
 export async function Footer() {
-	const t = await getTranslations("footer");
-	const about = await prisma.aboutContent.findUnique({ where: { id: 1 } });
+	const t = await getTranslations();
+	const about = await getAboutContent();
 	const socials = (about?.socialLinks ?? {}) as SocialLinks;
 	const year = new Date().getFullYear();
+
+	const navItems = [
+		{ href: "/about", label: t("header.about") },
+		{ href: "/career", label: t("header.career") },
+		{ href: "/projects", label: t("header.projects") },
+		{ href: "/contact", label: t("header.contact") },
+	];
 
 	const links = [
 		socials.github && { href: socials.github, icon: Github, label: "GitHub" },
@@ -28,11 +36,22 @@ export async function Footer() {
 		<footer className="border-t mt-16">
 			<div className="container mx-auto flex flex-col gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between">
 				<p className="text-sm text-muted-foreground">
-					{t("copyright", { year })}
+					{t("footer.copyright", { year })}
 				</p>
+				<nav className="flex flex-wrap items-center gap-x-4 gap-y-1">
+					{navItems.map((item) => (
+						<Link
+							key={item.href}
+							href={item.href}
+							className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{item.label}
+						</Link>
+					))}
+				</nav>
 				<div className="flex items-center gap-2">
 					{links.map((link) => (
-						<Link
+						<NextLink
 							key={link.label}
 							href={link.href}
 							target={link.href.startsWith("http") ? "_blank" : undefined}
@@ -41,7 +60,7 @@ export async function Footer() {
 							className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 						>
 							<link.icon className="h-4 w-4" />
-						</Link>
+						</NextLink>
 					))}
 				</div>
 			</div>

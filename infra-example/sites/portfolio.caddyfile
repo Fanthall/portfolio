@@ -1,7 +1,11 @@
 # Portfolio site config — auto HTTPS via Let's Encrypt.
-# Domain'i kendi domain'inle değiştir.
+# www → apex yönlendirmesi aşağıda ayrı blokta.
 
-portfolio.your-domain.com, www.portfolio.your-domain.com {
+www.sezerdemirdedek.com {
+    redir https://sezerdemirdedek.com{uri} permanent
+}
+
+sezerdemirdedek.com {
     encode zstd gzip
 
     # Static asset uzun cache (image, demos, downloads, Next.js bundle)

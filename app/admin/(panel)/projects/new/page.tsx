@@ -20,6 +20,7 @@ const empty: ProjectFormValues = {
 	downloadUrl: "",
 	videoUrl: "",
 	repoUrl: "",
+	tags: [],
 	isFeatured: false,
 	order: 0,
 };

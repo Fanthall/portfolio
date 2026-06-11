@@ -42,6 +42,7 @@ export interface ProjectFormValues {
 	downloadUrl: string;
 	videoUrl: string;
 	repoUrl: string;
+	tags: string[];
 	isFeatured: boolean;
 	order: number;
 }
@@ -55,6 +56,7 @@ export function ProjectForm({ mode, initial }: ProjectFormProps) {
 	const router = useRouter();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [values, setValues] = useState<ProjectFormValues>(initial);
+	const [tagsText, setTagsText] = useState(initial.tags.join(", "));
 	const [activeLocale, setActiveLocale] = useState<"tr" | "en">("tr");
 	const [uploading, setUploading] = useState(false);
 	const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
@@ -87,8 +89,15 @@ export function ProjectForm({ mode, initial }: ProjectFormProps) {
 		setStatus("saving");
 		setErrorMsg(null);
 
+		const tags = tagsText
+			.split(",")
+			.map((t) => t.trim())
+			.filter(Boolean)
+			.slice(0, 12);
+
 		const payload = {
 			...values,
+			tags,
 			coverImage: values.coverImage,
 			demoUrl: values.demoUrl || null,
 			demoFolder: values.demoFolder || null,
@@ -169,6 +178,20 @@ export function ProjectForm({ mode, initial }: ProjectFormProps) {
 								onChange={(e) => update({ order: Number(e.target.value) })}
 							/>
 						</div>
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="tags">
+							Teknoloji etiketleri{" "}
+							<span className="text-xs text-muted-foreground">(virgülle ayır, en çok 12)</span>
+						</Label>
+						<Input
+							id="tags"
+							value={tagsText}
+							onChange={(e) => setTagsText(e.target.value)}
+							placeholder="React, TypeScript, PostgreSQL"
+							maxLength={500}
+						/>
 					</div>
 
 					<div className="flex items-center gap-3">

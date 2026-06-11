@@ -16,9 +16,9 @@ function formatMonth(date: Date, locale: Locale) {
 	}).format(date);
 }
 
-function formatPeriod(start: Date, end: Date | null, locale: Locale) {
+function formatPeriod(start: Date, end: Date | null, locale: Locale, presentLabel: string) {
 	const startStr = formatMonth(start, locale);
-	const endStr = end ? formatMonth(end, locale) : locale === "tr" ? "Devam ediyor" : "Present";
+	const endStr = end ? formatMonth(end, locale) : presentLabel;
 	return `${startStr} — ${endStr}`;
 }
 
@@ -75,16 +75,17 @@ function groupByCompany(experiences: WorkExperience[]): CompanyGroup[] {
 
 export default async function CareerPage() {
 	const locale = (await getLocale()) as Locale;
-	const t = await getTranslations("header");
+	const t = await getTranslations();
 	const experiences = await prisma.workExperience.findMany();
 	const groups = groupByCompany(experiences);
 
-	const activeLabel = locale === "tr" ? "Aktif" : "Active";
+	const activeLabel = t("career.active");
+	const presentLabel = t("career.present");
 
 	return (
 		<div className="container mx-auto px-4 py-12 md:py-20 max-w-3xl animate-fade-in">
 			<h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-10">
-				{t("career")}
+				{t("header.career")}
 			</h1>
 
 			<ol className="space-y-4">
@@ -107,7 +108,7 @@ export default async function CareerPage() {
 												{group.companyName}
 											</h2>
 											<p className="text-xs text-muted-foreground mt-1">
-												{formatPeriod(group.earliestStart, group.latestEnd, locale)}
+												{formatPeriod(group.earliestStart, group.latestEnd, locale, presentLabel)}
 											</p>
 										</div>
 									</div>
@@ -131,7 +132,7 @@ export default async function CareerPage() {
 													)}
 												/>
 												<p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-													{formatPeriod(pos.startDate, pos.endDate, locale)}
+													{formatPeriod(pos.startDate, pos.endDate, locale, presentLabel)}
 												</p>
 												<h3 className="font-medium mt-0.5">
 													{locale === "tr" ? pos.roleTr : pos.roleEn}
@@ -147,7 +148,12 @@ export default async function CareerPage() {
 						</Card>
 					</li>
 				))}
-				{groups.length === 0 && <li className="text-muted-foreground">—</li>}
+				{groups.length === 0 && (
+					<li className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
+						<Building2 className="h-10 w-10 text-muted-foreground/50" strokeWidth={1.5} />
+						<p className="text-muted-foreground">{t("career.empty")}</p>
+					</li>
+				)}
 			</ol>
 		</div>
 	);

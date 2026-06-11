@@ -8,7 +8,15 @@
 	},
 	"home": {
 		"title": "Ben Sezer Demir DEDEK",
-		"subtitle": "React.js Geliştirici"
+		"subtitle": "React.js Geliştirici",
+		"currently": "Şu an",
+		"readMore": "Devamını oku",
+		"featuredTitle": "Öne çıkan projeler",
+		"stats": {
+			"experience": "Yıl deneyim",
+			"projects": "Proje",
+			"companies": "Şirket"
+		}
 	},
 	"common": {
 		"language": "Dil",
@@ -17,14 +25,41 @@
 		"backToProjects": "Projelere dön",
 		"openInNewTab": "Yeni sekmede aç"
 	},
+	"about": {
+		"skillsTitle": "Beceriler"
+	},
+	"career": {
+		"active": "Aktif",
+		"present": "Devam ediyor",
+		"empty": "Kariyer kayıtları yakında eklenecek."
+	},
+	"projects": {
+		"empty": "Henüz proje eklenmedi — yakında burada olacaklar.",
+		"technologies": "Teknolojiler"
+	},
 	"contact": {
+		"intro": "Aşağıdaki formdan veya doğrudan kanallardan ulaşabilirsin.",
+		"direct": "Doğrudan iletişim",
 		"name": "Ad soyad",
 		"email": "E-posta",
 		"subject": "Konu",
 		"message": "Mesaj",
 		"send": "Gönder",
-		"success": "Mesaj gönderildi, teşekkürler.",
-		"error": "Mesaj gönderilemedi. Lütfen tekrar deneyin."
+		"success": "Mesajın gönderildi, teşekkürler.",
+		"error": "Mesaj gönderilemedi. Lütfen yeniden dene."
+	},
+	"notFound": {
+		"title": "Sayfa bulunamadı",
+		"description": "Aradığın sayfa kaldırılmış veya hiç var olmamış olabilir.",
+		"home": "Anasayfa",
+		"projects": "Projeler"
+	},
+	"error": {
+		"title": "Bir şeyler ters gitti",
+		"description": "Sayfa yüklenirken beklenmedik bir hata oluştu. Lütfen yeniden dene.",
+		"retry": "Yeniden dene",
+		"home": "Anasayfa",
+		"codeLabel": "Hata kodu"
 	},
 	"footer": {
 		"copyright": "© {year} Sezer Demir DEDEK"

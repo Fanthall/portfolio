@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentAdmin } from "@/lib/auth";
+import { skillsSchema } from "@/lib/skills";
 
 const socialLinksSchema = z
 	.object({
@@ -22,6 +24,7 @@ const aboutSchema = z.object({
 	bioEn: z.string().min(1).max(5000),
 	photoUrl: z.string().max(500).nullable().optional(),
 	socialLinks: socialLinksSchema.optional(),
+	skills: skillsSchema.nullable().optional(),
 });
 
 export async function PUT(request: Request) {
@@ -54,6 +57,13 @@ export async function PUT(request: Request) {
 
 	const siteTitle = parsed.data.siteTitle?.trim() || null;
 	const siteDescription = parsed.data.siteDescription?.trim() || null;
+	// undefined → alanı değiştirme; null/[] → temizle (default'a dön); dolu → kaydet
+	const skills =
+		parsed.data.skills === undefined
+			? undefined
+			: parsed.data.skills && parsed.data.skills.length > 0
+				? parsed.data.skills
+				: Prisma.DbNull;
 
 	const updated = await prisma.aboutContent.upsert({
 		where: { id: 1 },
@@ -67,6 +77,7 @@ export async function PUT(request: Request) {
 			bioEn: parsed.data.bioEn,
 			photoUrl: parsed.data.photoUrl ?? null,
 			socialLinks: cleanedSocials,
+			skills,
 		},
 		update: {
 			siteTitle,
@@ -77,6 +88,7 @@ export async function PUT(request: Request) {
 			bioEn: parsed.data.bioEn,
 			photoUrl: parsed.data.photoUrl ?? null,
 			socialLinks: cleanedSocials,
+			skills,
 		},
 	});
 

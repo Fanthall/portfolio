@@ -8,7 +8,15 @@
 	},
 	"home": {
 		"title": "I'm Sezer Demir DEDEK",
-		"subtitle": "React.js Developer"
+		"subtitle": "React.js Developer",
+		"currently": "Currently",
+		"readMore": "Read more",
+		"featuredTitle": "Featured projects",
+		"stats": {
+			"experience": "Years of experience",
+			"projects": "Projects",
+			"companies": "Companies"
+		}
 	},
 	"common": {
 		"language": "Language",
@@ -17,14 +25,41 @@
 		"backToProjects": "Back to projects",
 		"openInNewTab": "Open in new tab"
 	},
+	"about": {
+		"skillsTitle": "Skills"
+	},
+	"career": {
+		"active": "Active",
+		"present": "Present",
+		"empty": "Career entries are coming soon."
+	},
+	"projects": {
+		"empty": "No projects yet — they will be here soon.",
+		"technologies": "Technologies"
+	},
 	"contact": {
+		"intro": "Use the form below or reach out directly through these channels.",
+		"direct": "Direct contact",
 		"name": "Full name",
 		"email": "Email",
 		"subject": "Subject",
 		"message": "Message",
 		"send": "Send",
-		"success": "Message sent, thank you.",
-		"error": "Could not send message. Please try again."
+		"success": "Your message has been sent — thank you.",
+		"error": "The message could not be sent. Please try again."
+	},
+	"notFound": {
+		"title": "Page not found",
+		"description": "The page you are looking for may have been removed or may never have existed.",
+		"home": "Home",
+		"projects": "Projects"
+	},
+	"error": {
+		"title": "Something went wrong",
+		"description": "An unexpected error occurred while loading the page. Please try again.",
+		"retry": "Try again",
+		"home": "Home",
+		"codeLabel": "Error code"
 	},
 	"footer": {
 		"copyright": "© {year} Sezer Demir DEDEK"

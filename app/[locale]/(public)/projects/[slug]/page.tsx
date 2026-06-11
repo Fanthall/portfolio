@@ -1,11 +1,15 @@
-import Link from "next/link";
+import Image from "next/image";
+import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeft, Github } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { Link } from "@/i18n/navigation";
+import { buildLanguageAlternates, localizeUrl } from "@/lib/site";
 import { prisma } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { ProjectDemo } from "@/components/ProjectDemo";
-import type { Locale } from "@/i18n/request";
+import type { Locale } from "@/i18n/routing";
 
 interface PageProps {
 	params: Promise<{ slug: string }>;
@@ -13,11 +17,19 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
 	const { slug } = await params;
+	const locale = (await getLocale()) as Locale;
 	const project = await prisma.project.findUnique({ where: { slug } });
 	if (!project) return { title: "Not found" };
+	const title = locale === "tr" ? project.titleTr : project.titleEn;
+	const description = locale === "tr" ? project.summaryTr : project.summaryEn;
+	const path = `/projects/${slug}`;
 	return {
-		title: `${project.titleEn} — Sezer Demir DEDEK`,
-		description: project.summaryEn,
+		title: `${title} — Sezer Demir DEDEK`,
+		description,
+		alternates: {
+			canonical: localizeUrl(path, locale),
+			languages: buildLanguageAlternates(path),
+		},
 	};
 }
 
@@ -45,20 +57,45 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 				</Link>
 			</Button>
 
-			<header className="space-y-3">
+			<header className="space-y-4">
 				<h1 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h1>
 				<p className="text-lg text-muted-foreground">{summary}</p>
+				{project.tags.length > 0 && (
+					<ul className="flex flex-wrap gap-1.5" aria-label={t("projects.technologies")}>
+						{project.tags.map((tag) => (
+							<li
+								key={tag}
+								className="inline-flex items-center rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
+							>
+								{tag}
+							</li>
+						))}
+					</ul>
+				)}
 				{project.repoUrl && (
 					<Button variant="outline" size="sm" asChild>
-						<Link href={project.repoUrl} target="_blank" rel="noopener noreferrer">
+						<NextLink href={project.repoUrl} target="_blank" rel="noopener noreferrer">
 							<Github /> GitHub
-						</Link>
+						</NextLink>
 					</Button>
 				)}
 			</header>
 
+			{project.coverImage && (
+				<div className="relative mt-8 aspect-video w-full overflow-hidden rounded-xl border bg-muted">
+					<Image
+						src={project.coverImage}
+						alt={title}
+						fill
+						sizes="(min-width: 1024px) 56rem, 100vw"
+						className="object-cover"
+						priority
+					/>
+				</div>
+			)}
+
 			<section className="mt-10 prose prose-zinc dark:prose-invert max-w-none">
-				<p className="leading-relaxed whitespace-pre-line">{desc}</p>
+				<ReactMarkdown>{desc}</ReactMarkdown>
 			</section>
 
 			<section className="mt-10">

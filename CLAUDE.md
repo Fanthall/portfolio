@@ -21,7 +21,7 @@ Sezer Demir DEDEK'in kişisel portföy uygulaması — admin panelinden yönetil
 | UI primitives | **shadcn/ui** | Komponentler `components/ui/` altında — paket değil, repo'da editlenebilir |
 | Stil | Tailwind CSS v3.4 | CSS variables (slate + violet teması), `app/globals.css` |
 | Icon | lucide-react | Tüm ikonlar |
-| i18n | next-intl | Cookie-based locale (`locale` cookie); `messages/{tr,en}.json` |
+| i18n | next-intl v4 | **Path-based locale**: TR prefix'siz (`/about`), EN `/en/*`; `i18n/routing.ts` + middleware; `messages/{tr,en}.json` |
 | DB | PostgreSQL 16 (Docker local, port 5437) | Prod'da Neon/Railway/self-hosted Postgres |
 | ORM | Prisma 6 | `prisma/schema.prisma`, migrations versioned |
 | Auth | JWT in HTTPOnly cookie | bcryptjs hash, 12 saat TTL; `lib/auth.ts` |
@@ -68,7 +68,7 @@ portfolio/
 │   │           ├── image/            # Genel multipart image upload (auth)
 │   │           ├── demo/[slug]/      # Zip extract → public/demos/[slug]/
 │   │           └── download/[slug]/  # Installer upload → public/downloads/[slug]/
-│   ├── actions/preferences.ts        # Server action: setLocale, setTheme (cookie + revalidate)
+│   ├── actions/preferences.ts        # Server action: setTheme (cookie + revalidate); locale URL ile taşınır
 │   ├── layout.tsx                    # Root: NextIntlClientProvider + Providers + dinamik metadata (siteTitle DB'den)
 │   ├── error.tsx                     # Global error boundary
 │   ├── not-found.tsx                 # Özel 404
@@ -135,7 +135,7 @@ portfolio/
 ## Sözleşmeler
 
 - **Aktif iş** = `WorkExperience.endDate === null`. Home hero'da yeşil chip, Career sayfasında "Aktif" rozet + emerald ring, Admin dashboard'da spotlight kartı.
-- **Locale değişimi**: `setLocale` server action → `locale` cookie + `revalidatePath("/", "layout")`. URL kirletmek istemediği için path-based değil cookie-based.
+- **Locale değişimi**: **path-based** (SEO için; 2026-06-10'da cookie'den geçildi). TR varsayılan ve prefix'siz, EN `/en/*`. `i18n/routing.ts` (defineRouting, as-needed) + `i18n/navigation.ts` (locale-aware Link/usePathname/useRouter — public iç linkler BUNU kullanır, dış linkler next/link). LanguageToggle `router.replace(pathname, {locale}) + router.refresh()`. hreflang: `lib/site.ts buildLanguageAlternates` (tr/en/x-default, sitemap + metadata).
 - **Theme değişimi**: `setTheme` server action → `theme` cookie. `<html class="dark">` server-side render edilir.
 - **Admin auth**: 2 katman — middleware (`/admin/*` cookie var mı?) + admin layout (`getCurrentAdmin()` DB verify). API'ler ek olarak `getCurrentAdmin` check ediyor.
 - **File upload security**: image (MIME whitelist + 5 MB), demo zip (extension whitelist + path traversal koruması + 20 MB total + 5 MB per file + `index.html` zorunlu), installer (extension whitelist + 150 MB).

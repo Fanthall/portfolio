@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
-import { getSiteUrl, PAGE_PATHS, type PageKeyValue } from "@/lib/site";
+import {
+	buildLanguageAlternates,
+	localizeUrl,
+	PAGE_PATHS,
+	type PageKeyValue,
+} from "@/lib/site";
 
 // DB'ye bağımlı; build-time prerender etme.
 export const dynamic = "force-dynamic";
@@ -14,8 +19,6 @@ const STATIC_PRIORITY: Record<PageKeyValue, number> = {
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-	const base = getSiteUrl();
-
 	const [projects, pageSeoRows, about] = await Promise.all([
 		prisma.project.findMany({ select: { slug: true, updatedAt: true } }),
 		prisma.pageSeo.findMany({
@@ -32,27 +35,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	);
 	const aboutUpdated = about?.updatedAt ?? new Date();
 
+	// Her sayfa için TR + EN ayrı kayıt; her kayıtta hreflang alternates
+	// (Google çok dilli site rehberi — sitemap üzerinden hreflang bildirimi).
 	const staticEntries: MetadataRoute.Sitemap = (
 		Object.keys(PAGE_PATHS) as PageKeyValue[]
 	)
 		.filter((key) => !seoMap.get(key)?.noIndex)
-		.map((key) => {
+		.flatMap((key) => {
 			const path = PAGE_PATHS[key];
-			const url = path === "/" ? base : `${base}${path}`;
-			return {
-				url,
-				lastModified: seoMap.get(key)?.updatedAt ?? aboutUpdated,
-				changeFrequency: "monthly",
+			const lastModified = seoMap.get(key)?.updatedAt ?? aboutUpdated;
+			const alternates = { languages: buildLanguageAlternates(path) };
+			return (["tr", "en"] as const).map((locale) => ({
+				url: localizeUrl(path, locale),
+				lastModified,
+				changeFrequency: "monthly" as const,
 				priority: STATIC_PRIORITY[key],
-			};
+				alternates,
+			}));
 		});
 
-	const projectEntries: MetadataRoute.Sitemap = projects.map((p) => ({
-		url: `${base}/projects/${p.slug}`,
-		lastModified: p.updatedAt,
-		changeFrequency: "monthly",
-		priority: 0.6,
-	}));
+	const projectEntries: MetadataRoute.Sitemap = projects.flatMap((p) => {
+		const path = `/projects/${p.slug}`;
+		const alternates = { languages: buildLanguageAlternates(path) };
+		return (["tr", "en"] as const).map((locale) => ({
+			url: localizeUrl(path, locale),
+			lastModified: p.updatedAt,
+			changeFrequency: "monthly" as const,
+			priority: 0.6,
+			alternates,
+		}));
+	});
 
 	return [...staticEntries, ...projectEntries];
 }

@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Github, Instagram, Linkedin, Mail } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { getAboutContent } from "@/lib/about";
+import { parseSkills } from "@/lib/skills";
 import { Card, CardContent } from "@/components/ui/card";
 import { getPageMetadata } from "@/lib/seo";
 import type { Locale } from "@/i18n/request";
@@ -19,8 +20,8 @@ interface SocialLinks {
 
 export default async function AboutPage() {
 	const locale = (await getLocale()) as Locale;
-	const t = await getTranslations("header");
-	const about = await prisma.aboutContent.findUnique({ where: { id: 1 } });
+	const t = await getTranslations();
+	const about = await getAboutContent();
 	const title = locale === "tr" ? about?.titleTr : about?.titleEn;
 	const bio = locale === "tr" ? about?.bioTr : about?.bioEn;
 	const socials = (about?.socialLinks ?? {}) as SocialLinks;
@@ -32,36 +33,10 @@ export default async function AboutPage() {
 		socials.instagram && { href: socials.instagram, icon: Instagram, label: "Instagram" },
 	].filter(Boolean) as { href: string; icon: typeof Mail; label: string }[];
 
-	const skills = {
-		tr: [
-			{
-				title: "Front-End",
-				items: ["React.js", "React Native", "TypeScript", "Next.js", "Tailwind CSS"],
-			},
-			{
-				title: "Back-End",
-				items: ["Node.js", "Java · Spring Boot", "REST API", "PostgreSQL"],
-			},
-			{
-				title: "Araçlar & Pratikler",
-				items: ["Git", "OOP", "Docker", "Linux"],
-			},
-		],
-		en: [
-			{
-				title: "Front-End",
-				items: ["React.js", "React Native", "TypeScript", "Next.js", "Tailwind CSS"],
-			},
-			{
-				title: "Back-End",
-				items: ["Node.js", "Java · Spring Boot", "REST API", "PostgreSQL"],
-			},
-			{
-				title: "Tools & Practices",
-				items: ["Git", "OOP", "Docker", "Linux"],
-			},
-		],
-	};
+	const skillGroups = parseSkills(about?.skills).map((g) => ({
+		title: locale === "tr" ? g.titleTr : g.titleEn,
+		items: g.items,
+	}));
 
 	return (
 		<div className="container mx-auto px-4 py-12 md:py-20 animate-fade-in">
@@ -85,7 +60,7 @@ export default async function AboutPage() {
 				<div className="space-y-5">
 					<div>
 						<p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-							{t("about")}
+							{t("header.about")}
 						</p>
 						<h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
 							{title}
@@ -116,10 +91,10 @@ export default async function AboutPage() {
 			{/* Skills */}
 			<section className="mt-20">
 				<h2 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-6">
-					{locale === "tr" ? "Beceriler" : "Skills"}
+					{t("about.skillsTitle")}
 				</h2>
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					{skills[locale].map((group) => (
+					{skillGroups.map((group) => (
 						<Card key={group.title}>
 							<CardContent className="p-6 space-y-3">
 								<h3 className="font-semibold">{group.title}</h3>

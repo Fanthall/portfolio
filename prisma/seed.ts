@@ -93,7 +93,7 @@ async function main() {
 					descEn:
 						"Built the admin panel and web application for an event ticketing ecosystem. " +
 						"Stack: TypeScript · React.js · Git · REST · OOP.",
-					startDate: new Date("2025-09-01"),
+					startDate: new Date("2025-08-01"),
 					endDate: new Date("2026-05-31"),
 					order: 0,
 				},
@@ -187,6 +187,7 @@ async function main() {
 						"supports 7TV emotes and ships an XSS-hardened render layer.",
 					demoType: "DOWNLOAD_ONLY",
 					repoUrl: "https://github.com/Fanthall/kick-chat-view",
+					tags: ["Electron", "React", "TypeScript", "WebSocket"],
 					isFeatured: true,
 					order: 0,
 				},
@@ -205,6 +206,7 @@ async function main() {
 						"NestJS backend (helmet + throttler + CORS hardened), Prisma + PostgreSQL data layer, " +
 						"Electron desktop client on the consumer side.",
 					demoType: "GALLERY_ONLY",
+					tags: ["NestJS", "Prisma", "PostgreSQL", "Docker", "Electron", "AES-256-GCM"],
 					isFeatured: true,
 					order: 1,
 				},
