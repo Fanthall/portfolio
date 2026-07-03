@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAdmin } from "@/lib/auth";
 
 const createSchema = z.object({
@@ -40,18 +40,24 @@ export async function POST(request: Request) {
 		);
 	}
 
-	const created = await prisma.workExperience.create({
-		data: {
-			companyName: parsed.data.companyName.trim(),
-			roleTr: parsed.data.roleTr.trim(),
-			roleEn: parsed.data.roleEn.trim(),
-			descTr: parsed.data.descTr.trim(),
-			descEn: parsed.data.descEn.trim(),
-			startDate: new Date(parsed.data.startDate),
-			endDate: parsed.data.endDate ? new Date(parsed.data.endDate) : null,
+	const toDate = (v: string) => new Date(v).toISOString().slice(0, 10);
+
+	const supabase = createSupabaseAdminClient();
+	const { data: created, error } = await supabase
+		.from("work_experience")
+		.insert({
+			company_name: parsed.data.companyName.trim(),
+			role_tr: parsed.data.roleTr.trim(),
+			role_en: parsed.data.roleEn.trim(),
+			desc_tr: parsed.data.descTr.trim(),
+			desc_en: parsed.data.descEn.trim(),
+			start_date: toDate(parsed.data.startDate),
+			end_date: parsed.data.endDate ? toDate(parsed.data.endDate) : null,
 			order: parsed.data.order ?? 0,
-		},
-	});
+		})
+		.select()
+		.single();
+	if (error) throw error;
 
 	revalidatePath("/", "layout");
 	return NextResponse.json({ ok: true, experience: created }, { status: 201 });

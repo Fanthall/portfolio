@@ -1,7 +1,7 @@
-import type { WorkExperience } from "@prisma/client";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Building2 } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { getWorkExperiences } from "@/lib/data/queries";
+import type { WorkExperience } from "@/lib/data/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getPageMetadata } from "@/lib/seo";
@@ -76,7 +76,7 @@ function groupByCompany(experiences: WorkExperience[]): CompanyGroup[] {
 export default async function CareerPage() {
 	const locale = (await getLocale()) as Locale;
 	const t = await getTranslations();
-	const experiences = await prisma.workExperience.findMany();
+	const experiences = await getWorkExperiences();
 	const groups = groupByCompany(experiences);
 
 	const activeLabel = t("career.active");

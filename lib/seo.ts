@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import type { PageKey } from "@prisma/client";
 import { getLocale } from "next-intl/server";
-import { prisma } from "@/lib/db";
-import { getAboutContent } from "@/lib/about";
+import type { PageKey } from "@/lib/data/types";
+import { getAboutContent, getPageSeo } from "@/lib/data/queries";
 import type { Locale } from "@/i18n/routing";
 import {
 	buildLanguageAlternates,
@@ -65,7 +64,7 @@ export async function getPageMetadata(
 ): Promise<Metadata> {
 	const [locale, pageSeo, about] = await Promise.all([
 		getLocale() as Promise<Locale>,
-		prisma.pageSeo.findUnique({ where: { pageKey } }),
+		getPageSeo(pageKey),
 		getAboutContent(),
 	]);
 

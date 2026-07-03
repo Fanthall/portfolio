@@ -23,9 +23,20 @@ export const DEFAULT_SKILLS: SkillGroup[] = [
 		items: ["React.js", "React Native", "TypeScript", "Next.js", "Tailwind CSS"],
 	},
 	{
+		titleTr: "AI & Ajan Geliştirme",
+		titleEn: "AI & Agent Development",
+		items: [
+			"Claude Code",
+			"Claude Agent SDK",
+			"MCP",
+			"LLM Integration",
+			"Prompt Engineering",
+		],
+	},
+	{
 		titleTr: "Back-End",
 		titleEn: "Back-End",
-		items: ["Node.js", "Java · Spring Boot", "REST API", "PostgreSQL"],
+		items: ["Node.js", "Java · Spring Boot", "REST API", "PostgreSQL", "Supabase"],
 	},
 	{
 		titleTr: "Araçlar & Pratikler",

@@ -1,12 +1,17 @@
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { mapWork } from "@/lib/data/types";
 import { CareerManager } from "@/components/admin/CareerManager";
 
 export const metadata = { title: "Kariyer — Admin" };
 
 export default async function AdminCareerPage() {
-	const experiences = await prisma.workExperience.findMany({
-		orderBy: [{ order: "asc" }, { startDate: "desc" }],
-	});
+	const supabase = createSupabaseAdminClient();
+	const { data } = await supabase
+		.from("work_experience")
+		.select("*")
+		.order("order", { ascending: true })
+		.order("start_date", { ascending: false });
+	const experiences = (data ?? []).map(mapWork);
 
 	return (
 		<div className="p-8 max-w-4xl">

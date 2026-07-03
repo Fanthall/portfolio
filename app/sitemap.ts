@@ -1,5 +1,9 @@
 import type { MetadataRoute } from "next";
-import { prisma } from "@/lib/db";
+import {
+	getAboutContent,
+	getAllPageSeo,
+	getProjectSlugs,
+} from "@/lib/data/queries";
 import {
 	buildLanguageAlternates,
 	localizeUrl,
@@ -20,14 +24,9 @@ const STATIC_PRIORITY: Record<PageKeyValue, number> = {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const [projects, pageSeoRows, about] = await Promise.all([
-		prisma.project.findMany({ select: { slug: true, updatedAt: true } }),
-		prisma.pageSeo.findMany({
-			select: { pageKey: true, noIndex: true, updatedAt: true },
-		}),
-		prisma.aboutContent.findUnique({
-			where: { id: 1 },
-			select: { updatedAt: true },
-		}),
+		getProjectSlugs(),
+		getAllPageSeo(),
+		getAboutContent(),
 	]);
 
 	const seoMap = new Map(

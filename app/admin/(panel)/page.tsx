@@ -12,7 +12,8 @@ import {
 	Star,
 	UserCog,
 } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { mapAbout, mapWork } from "@/lib/data/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getSiteUrl } from "@/lib/site";
@@ -20,52 +21,87 @@ import { getSiteUrl } from "@/lib/site";
 export const metadata = { title: "Admin Panel" };
 
 export default async function AdminDashboardPage() {
+	const supabase = createSupabaseAdminClient();
+
 	const [
-		about,
-		projects,
-		featuredProjectsCount,
-		experiences,
-		activeExperiencesCount,
-		messages,
-		unreadMessagesCount,
-		latestMessages,
-		seoCustomCount,
-		recentProjects,
+		aboutRes,
+		projectsRes,
+		featuredProjectsRes,
+		experiencesRes,
+		activeExperiencesRes,
+		messagesRes,
+		unreadMessagesRes,
+		latestMessagesRes,
+		seoRes,
+		recentProjectsRes,
+		activeJobRes,
 	] = await Promise.all([
-		prisma.aboutContent.findUnique({ where: { id: 1 } }),
-		prisma.project.count(),
-		prisma.project.count({ where: { isFeatured: true } }),
-		prisma.workExperience.count(),
-		prisma.workExperience.count({ where: { endDate: null } }),
-		prisma.contactMessage.count(),
-		prisma.contactMessage.count({ where: { isRead: false } }),
-		prisma.contactMessage.findMany({
-			orderBy: [{ isRead: "asc" }, { createdAt: "desc" }],
-			take: 4,
-		}),
-		prisma.pageSeo.count({
-			where: {
-				OR: [
-					{ titleTr: { not: null } },
-					{ titleEn: { not: null } },
-					{ descriptionTr: { not: null } },
-					{ descriptionEn: { not: null } },
-					{ ogImage: { not: null } },
-					{ noIndex: true },
-				],
-			},
-		}),
-		prisma.project.findMany({
-			orderBy: { updatedAt: "desc" },
-			take: 3,
-			select: { id: true, slug: true, titleTr: true, coverImage: true, isFeatured: true },
-		}),
+		supabase.from("about_content").select("*").eq("id", 1).maybeSingle(),
+		supabase.from("project").select("*", { count: "exact", head: true }),
+		supabase
+			.from("project")
+			.select("*", { count: "exact", head: true })
+			.eq("is_featured", true),
+		supabase.from("work_experience").select("*", { count: "exact", head: true }),
+		supabase
+			.from("work_experience")
+			.select("*", { count: "exact", head: true })
+			.is("end_date", null),
+		supabase.from("contact_message").select("*", { count: "exact", head: true }),
+		supabase
+			.from("contact_message")
+			.select("*", { count: "exact", head: true })
+			.eq("is_read", false),
+		supabase
+			.from("contact_message")
+			.select("*")
+			.order("is_read", { ascending: true })
+			.order("created_at", { ascending: false })
+			.limit(4),
+		supabase
+			.from("page_seo")
+			.select("*", { count: "exact", head: true })
+			.or(
+				"title_tr.not.is.null,title_en.not.is.null,description_tr.not.is.null,description_en.not.is.null,og_image.not.is.null,no_index.is.true",
+			),
+		supabase
+			.from("project")
+			.select("id, slug, title_tr, cover_image, is_featured")
+			.order("updated_at", { ascending: false })
+			.limit(3),
+		supabase
+			.from("work_experience")
+			.select("*")
+			.is("end_date", null)
+			.order("start_date", { ascending: false })
+			.limit(1)
+			.maybeSingle(),
 	]);
 
-	const activeJob = await prisma.workExperience.findFirst({
-		where: { endDate: null },
-		orderBy: { startDate: "desc" },
-	});
+	const about = aboutRes.data ? mapAbout(aboutRes.data) : null;
+	const projects = projectsRes.count ?? 0;
+	const featuredProjectsCount = featuredProjectsRes.count ?? 0;
+	const experiences = experiencesRes.count ?? 0;
+	const activeExperiencesCount = activeExperiencesRes.count ?? 0;
+	const messages = messagesRes.count ?? 0;
+	const unreadMessagesCount = unreadMessagesRes.count ?? 0;
+	const latestMessages = (latestMessagesRes.data ?? []).map((m) => ({
+		id: m.id,
+		name: m.name,
+		subject: m.subject,
+		body: m.body,
+		isRead: m.is_read,
+		createdAt: new Date(m.created_at),
+	}));
+	const seoCustomCount = seoRes.count ?? 0;
+	const recentProjects = (recentProjectsRes.data ?? []).map((p) => ({
+		id: p.id,
+		slug: p.slug,
+		titleTr: p.title_tr,
+		coverImage: p.cover_image,
+		isFeatured: p.is_featured,
+	}));
+	const activeJob = activeJobRes.data ? mapWork(activeJobRes.data) : null;
 
 	const siteUrl = getSiteUrl();
 	const siteTitle = about?.siteTitle?.trim() || "Sezer Demir DEDEK";

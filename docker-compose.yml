@@ -1,21 +1,36 @@
-services:
-  db:
-    image: postgres:16-alpine
-    container_name: portfolio-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-portfolio}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    ports:
-      - "${POSTGRES_PORT:-5437}:5432"
-    volumes:
-      - portfolio-db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-portfolio}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+# Portfolio — LOCAL geliştirme.
+#
+# Birincil local akış Docker DEĞİL:
+#   1) npx supabase start      (yerel Supabase: DB+Auth+Storage, port 54341)
+#   2) npm run supabase:bootstrap   (admin kullanıcısı + bucket'lar)
+#   3) npm run dev             (Next.js, port 3001)
+#
+# Bu compose ise app'i Docker imajı olarak local test etmek içindir (opsiyonel).
+# Container host'taki yerel Supabase'e host.docker.internal ile ulaşır; NEXT_PUBLIC_*
+# tarayıcıya gömüldüğünden URL'in HOST'tan da çözülebilir olması gerekir — bu yüzden
+# local Docker testinde Supabase URL'i olarak makinenin LAN IP'sini kullanmak en sağlamı
+# (ör. .env'de NEXT_PUBLIC_SUPABASE_URL=http://192.168.x.x:54341). Salt `next dev`
+# kullananlar bu servise ihtiyaç duymaz.
 
-volumes:
-  portfolio-db:
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3001}
+    image: portfolio-app:local
+    container_name: portfolio-app-local
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "3001:3001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

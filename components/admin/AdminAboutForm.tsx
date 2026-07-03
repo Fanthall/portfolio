@@ -29,6 +29,11 @@ interface InitialValues {
 	linkedin: string;
 	instagram: string;
 	gmail: string;
+	roleTr: string;
+	roleEn: string;
+	taglineTr: string;
+	taglineEn: string;
+	projectsWorked: number | null;
 	skills: SkillGroup[];
 }
 
@@ -105,6 +110,14 @@ export function AdminAboutForm({ initial }: AdminAboutFormProps) {
 			titleEn: String(data.get("titleEn") ?? "").trim(),
 			bioTr: String(data.get("bioTr") ?? "").trim(),
 			bioEn: String(data.get("bioEn") ?? "").trim(),
+			roleTr: String(data.get("roleTr") ?? "").trim(),
+			roleEn: String(data.get("roleEn") ?? "").trim(),
+			taglineTr: String(data.get("taglineTr") ?? "").trim(),
+			taglineEn: String(data.get("taglineEn") ?? "").trim(),
+			projectsWorked: (() => {
+				const v = String(data.get("projectsWorked") ?? "").trim();
+				return v === "" ? null : Number(v);
+			})(),
 			photoUrl: photoUrl ?? null,
 			skills: skillGroups
 				.map((g) => ({
@@ -182,6 +195,22 @@ export function AdminAboutForm({ initial }: AdminAboutFormProps) {
 							defaultValue={initial.siteDescription}
 							placeholder="Front-End focused software engineer — portfolio"
 						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="projectsWorked">Çalışılan proje sayısı (anasayfa istatistiği)</Label>
+						<Input
+							id="projectsWorked"
+							name="projectsWorked"
+							type="number"
+							min={0}
+							max={9999}
+							defaultValue={initial.projectsWorked ?? ""}
+							placeholder="7"
+						/>
+						<p className="text-xs text-muted-foreground">
+							Boş bırakılırsa vitrindeki proje sayısı (en az 7) kullanılır. Yıl deneyim ve
+							şirket sayısı kariyerden otomatik hesaplanır.
+						</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -263,6 +292,14 @@ export function AdminAboutForm({ initial }: AdminAboutFormProps) {
 								<Input id="titleTr" name="titleTr" required maxLength={200} defaultValue={initial.titleTr} />
 							</div>
 							<div className="space-y-2">
+								<Label htmlFor="roleTr">Rol / üst etiket (TR)</Label>
+								<Input id="roleTr" name="roleTr" maxLength={120} defaultValue={initial.roleTr} placeholder="Front-End & AI Ajan Geliştirici" />
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="taglineTr">Alt metin / özet (TR)</Label>
+								<Textarea id="taglineTr" name="taglineTr" maxLength={400} rows={2} defaultValue={initial.taglineTr} placeholder="Anasayfa hero altındaki kısa tanıtım cümlesi" />
+							</div>
+							<div className="space-y-2">
 								<Label htmlFor="bioTr">Biyografi (TR)</Label>
 								<Textarea id="bioTr" name="bioTr" required minLength={1} maxLength={5000} rows={10} defaultValue={initial.bioTr} />
 							</div>
@@ -274,6 +311,14 @@ export function AdminAboutForm({ initial }: AdminAboutFormProps) {
 							<div className="space-y-2">
 								<Label htmlFor="titleEn">Title (EN)</Label>
 								<Input id="titleEn" name="titleEn" required maxLength={200} defaultValue={initial.titleEn} />
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="roleEn">Role / eyebrow (EN)</Label>
+								<Input id="roleEn" name="roleEn" maxLength={120} defaultValue={initial.roleEn} placeholder="Front-End & AI Agent Engineer" />
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="taglineEn">Tagline / summary (EN)</Label>
+								<Textarea id="taglineEn" name="taglineEn" maxLength={400} rows={2} defaultValue={initial.taglineEn} placeholder="Short hero intro sentence" />
 							</div>
 							<div className="space-y-2">
 								<Label htmlFor="bioEn">Bio (EN)</Label>

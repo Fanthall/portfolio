@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAdmin } from "@/lib/auth";
 
 const DEMO_TYPES = [
@@ -61,32 +61,41 @@ export async function POST(request: Request) {
 		);
 	}
 
-	const existing = await prisma.project.findUnique({ where: { slug: parsed.data.slug } });
+	const supabase = createSupabaseAdminClient();
+
+	const { data: existing } = await supabase
+		.from("project")
+		.select("id")
+		.eq("slug", parsed.data.slug)
+		.maybeSingle();
 	if (existing) {
 		return NextResponse.json({ error: "slug_taken" }, { status: 409 });
 	}
 
-	const created = await prisma.project.create({
-		data: {
+	const { data: created, error } = await supabase
+		.from("project")
+		.insert({
 			slug: parsed.data.slug,
-			titleTr: parsed.data.titleTr.trim(),
-			titleEn: parsed.data.titleEn.trim(),
-			summaryTr: parsed.data.summaryTr.trim(),
-			summaryEn: parsed.data.summaryEn.trim(),
-			descTr: parsed.data.descTr.trim(),
-			descEn: parsed.data.descEn.trim(),
-			coverImage: emptyToNull(parsed.data.coverImage),
-			demoType: parsed.data.demoType,
-			demoUrl: emptyToNull(parsed.data.demoUrl),
-			demoFolder: emptyToNull(parsed.data.demoFolder),
-			downloadUrl: emptyToNull(parsed.data.downloadUrl),
-			videoUrl: emptyToNull(parsed.data.videoUrl),
-			repoUrl: emptyToNull(parsed.data.repoUrl),
+			title_tr: parsed.data.titleTr.trim(),
+			title_en: parsed.data.titleEn.trim(),
+			summary_tr: parsed.data.summaryTr.trim(),
+			summary_en: parsed.data.summaryEn.trim(),
+			desc_tr: parsed.data.descTr.trim(),
+			desc_en: parsed.data.descEn.trim(),
+			cover_image: emptyToNull(parsed.data.coverImage),
+			demo_type: parsed.data.demoType,
+			demo_url: emptyToNull(parsed.data.demoUrl),
+			demo_folder: emptyToNull(parsed.data.demoFolder),
+			download_url: emptyToNull(parsed.data.downloadUrl),
+			video_url: emptyToNull(parsed.data.videoUrl),
+			repo_url: emptyToNull(parsed.data.repoUrl),
 			tags: (parsed.data.tags ?? []).map((t) => t.trim()).filter(Boolean),
-			isFeatured: parsed.data.isFeatured ?? false,
+			is_featured: parsed.data.isFeatured ?? false,
 			order: parsed.data.order ?? 0,
-		},
-	});
+		})
+		.select()
+		.single();
+	if (error) throw error;
 
 	revalidatePath("/", "layout");
 	return NextResponse.json({ ok: true, project: created }, { status: 201 });

@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Pencil, Plus, Star } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { mapProject } from "@/lib/data/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DeleteProjectButton } from "@/components/admin/DeleteProjectButton";
@@ -9,10 +10,16 @@ import { DeleteProjectButton } from "@/components/admin/DeleteProjectButton";
 export const metadata = { title: "Projeler — Admin" };
 
 export default async function AdminProjectsPage() {
-	const projects = await prisma.project.findMany({
-		orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-		include: { _count: { select: { images: true } } },
-	});
+	const supabase = createSupabaseAdminClient();
+	const { data } = await supabase
+		.from("project")
+		.select("*, project_image(id)")
+		.order("order", { ascending: true })
+		.order("created_at", { ascending: false });
+	const projects = (data ?? []).map((row) => ({
+		...mapProject(row),
+		imageCount: Array.isArray(row.project_image) ? row.project_image.length : 0,
+	}));
 
 	return (
 		<div className="p-8 max-w-5xl">
@@ -63,7 +70,7 @@ export default async function AdminProjectsPage() {
 											</div>
 											<p className="text-xs text-muted-foreground truncate">
 												/{p.slug} · {p.demoType.toLowerCase().replace("_", " ")} ·{" "}
-												{p._count.images} görsel
+												{p.imageCount} görsel
 											</p>
 											<p className="text-sm text-muted-foreground line-clamp-2 mt-1">
 												{p.summaryTr}

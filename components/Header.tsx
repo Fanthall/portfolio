@@ -27,7 +27,7 @@ export async function Header({ theme }: HeaderProps) {
 			<div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
 				<Link
 					href="/"
-					className="flex items-center gap-3 font-semibold tracking-tight hover:opacity-80 transition-opacity"
+					className="flex items-center gap-3 transition-opacity hover:opacity-80"
 				>
 					<Image
 						src={logoSrc}
@@ -35,9 +35,11 @@ export async function Header({ theme }: HeaderProps) {
 						width={96}
 						height={96}
 						priority
-						className="h-12 w-12 object-contain"
+						className="h-11 w-11 object-contain"
 					/>
-					<span className="text-base hidden sm:inline">Sezer Demir DEDEK</span>
+					<span className="hidden font-display text-base font-semibold tracking-tight sm:inline">
+						Sezer Demir Dedek
+					</span>
 				</Link>
 				<NavLinks items={navItems} />
 				<div className="flex items-center gap-1">

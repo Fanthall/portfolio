@@ -22,11 +22,11 @@ Sezer Demir DEDEK'in kişisel portföy uygulaması — admin panelinden yönetil
 | Stil | Tailwind CSS v3.4 | CSS variables (slate + violet teması), `app/globals.css` |
 | Icon | lucide-react | Tüm ikonlar |
 | i18n | next-intl v4 | **Path-based locale**: TR prefix'siz (`/about`), EN `/en/*`; `i18n/routing.ts` + middleware; `messages/{tr,en}.json` |
-| DB | PostgreSQL 16 (Docker local, port 5437) | Prod'da Neon/Railway/self-hosted Postgres |
-| ORM | Prisma 6 | `prisma/schema.prisma`, migrations versioned |
-| Auth | JWT in HTTPOnly cookie | bcryptjs hash, 12 saat TTL; `lib/auth.ts` |
+| DB | **Supabase** (Postgres) | Local: Supabase CLI (port **54341** API / **54342** DB). Prod: Supabase cloud. `supabase/migrations/` + `supabase/seed.sql` |
+| Data erişimi | **@supabase/supabase-js + @supabase/ssr** | `lib/supabase/{server,admin,client,middleware}.ts` · domain katmanı `lib/data/` (snake_case→camelCase map). Prisma **emekli** (`lib/db.ts`, `prisma/` artık kullanılmıyor). RLS: public read, admin yazma **service role** ile |
+| Auth | **Supabase Auth** (cookie oturumu, @supabase/ssr) | Tek admin, public signup kapalı; `lib/auth.ts getCurrentAdmin` = getUser. Bootstrap kullanıcısı `scripts/supabase-bootstrap.mjs` |
 | Form | react-hook-form (kurulu, opsiyonel) + zod (server-side validation) | Çoğu form native useState pattern |
-| File upload | Native multipart + Node fs | `public/uploads/` (resim), `public/demos/[slug]/` (zip extract), `public/downloads/[slug]/` (installer) |
+| File upload | **Supabase Storage** (public bucket) | `images` (resim), `demos` (zip extract), `downloads` (installer). `lib/supabase/storage.ts`; `next.config` remotePatterns Supabase host'una izin verir |
 | Zip extract | unzipper | `next.config.mjs` `serverExternalPackages` ile bundle dışında |
 | Animasyon | CSS keyframes (`animate-fade-in`) | framer-motion kurulu ama aktif kullanım yok |
 
@@ -148,19 +148,22 @@ portfolio/
 ## Skill envanteri (CV'den, About sayfasında gösterilen)
 
 - **Front-End:** React.js, React Native, TypeScript, Next.js, Tailwind CSS
-- **Back-End:** Node.js, Java · Spring Boot, REST API, PostgreSQL
+- **AI & Agent Development:** Claude Code, Claude Agent SDK, MCP, LLM Integration, Prompt Engineering
+- **Back-End:** Node.js, Java · Spring Boot, REST API, PostgreSQL, Supabase
 - **Araçlar & Pratikler:** Git, OOP, Docker, Linux
+
+> **Artık DB-driven + admin'den düzenlenebilir** (`/admin/about`): `about_content` tablosunda `skills` (jsonb, grup editörü), `role_tr/en` (hero eyebrow), `tagline_tr/en` (hero alt-metin), `projects_worked` (stat). Null iken kod/i18n fallback (`lib/skills.ts` DEFAULT_SKILLS · `messages home.eyebrow/subtitle`). Home stat'ları: yıl deneyim + şirket = kariyerden otomatik; çalışılan proje = `about.projectsWorked ?? max(dbProje,7)`.
 
 ## Komutlar
 
 | Komut | Açıklama |
 |---|---|
-| `npm run db:up` | Local Postgres'i Docker'da kaldır (port 5437) |
-| `npm run db:down` | Postgres'i durdur |
-| `npm run prisma:migrate` | Yeni schema değişikliği için migration üret + uygula |
-| `npm run prisma:generate` | Prisma Client regenerate (schema değişirse) |
-| `npm run prisma:seed` | Admin + about + career + sample projects seed |
-| `npm run bootstrap` | `db:up && prisma:migrate && prisma:seed` zinciri |
+| `npm run supabase:start` | Yerel Supabase stack'i (Docker) kaldır (API 54341) |
+| `npm run supabase:stop` | Supabase stack'i durdur |
+| `npm run supabase:reset` | Migration + `seed.sql` yeniden uygula (local DB sıfırlanır) |
+| `npm run supabase:types` | `lib/supabase/database.types.ts` yeniden üret |
+| `npm run supabase:bootstrap` | Admin Auth kullanıcısı + Storage bucket'ları (idempotent) |
+| `npm run bootstrap` | `supabase:start && supabase:reset && supabase:bootstrap` zinciri |
 | `npm run dev` | Next.js dev server (port **3001**) |
 | `npm run build` | Production build |
 | `npm run start` | Production server (port 3001) |
@@ -169,17 +172,18 @@ portfolio/
 
 ## Portlar
 
-- Postgres: **5437** (PasswordManagement'ın 5436'sından ayrı, çakışma yok)
+- Supabase (local CLI): API **54341** · DB **54342** · Studio **54343** · Mailpit **54344** (bucket-list'in 5433x'inden ayrı, çakışmasız)
 - Next.js: **3001** (PasswordManagement 3200, chat-view 1212'den ayrı)
 
 ## Env
 
 | Değişken | Amaç |
 |---|---|
-| `DATABASE_URL` | Postgres connection string (dev: localhost:5437) |
-| `JWT_SECRET` | Admin session token imza secret'i (min 16 karakter) |
-| `JWT_TTL_SECONDS` | Token ömrü (default 12 saat) |
-| `ADMIN_BOOTSTRAP_EMAIL` / `_PASSWORD` | Seed sırasında admin kullanıcı oluşturma (dev: admin@portfolio.local / admin-local-dev) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase API URL (dev: http://127.0.0.1:54341) — client'a gömülür |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon (public) key — RLS'e tabi, client'a gömülür |
+| `SUPABASE_SERVICE_ROLE_KEY` | **GİZLİ** service role (RLS bypass) — sadece sunucu; repoya/commit'e girmez |
+| `SUPABASE_BUCKET_IMAGES/_DEMOS/_DOWNLOADS` | Storage bucket adları (default images/demos/downloads) |
+| `ADMIN_BOOTSTRAP_EMAIL` / `_PASSWORD` | `supabase:bootstrap` ile admin Auth kullanıcısı (dev: admin@portfolio.local) |
 | `NEXT_PUBLIC_SITE_URL` | Canonical / OG / sitemap için absolute URL (dev: http://localhost:3001) |
 
 ## Geliştirme prensipleri

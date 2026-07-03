@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAdmin } from "@/lib/auth";
 import { skillsSchema } from "@/lib/skills";
 
@@ -25,6 +24,11 @@ const aboutSchema = z.object({
 	photoUrl: z.string().max(500).nullable().optional(),
 	socialLinks: socialLinksSchema.optional(),
 	skills: skillsSchema.nullable().optional(),
+	roleTr: z.string().max(120).optional().or(z.literal("")),
+	roleEn: z.string().max(120).optional().or(z.literal("")),
+	taglineTr: z.string().max(400).optional().or(z.literal("")),
+	taglineEn: z.string().max(400).optional().or(z.literal("")),
+	projectsWorked: z.coerce.number().int().min(0).max(9999).nullable().optional(),
 });
 
 export async function PUT(request: Request) {
@@ -63,34 +67,34 @@ export async function PUT(request: Request) {
 			? undefined
 			: parsed.data.skills && parsed.data.skills.length > 0
 				? parsed.data.skills
-				: Prisma.DbNull;
+				: null;
 
-	const updated = await prisma.aboutContent.upsert({
-		where: { id: 1 },
-		create: {
-			id: 1,
-			siteTitle,
-			siteDescription,
-			titleTr: parsed.data.titleTr,
-			titleEn: parsed.data.titleEn,
-			bioTr: parsed.data.bioTr,
-			bioEn: parsed.data.bioEn,
-			photoUrl: parsed.data.photoUrl ?? null,
-			socialLinks: cleanedSocials,
-			skills,
-		},
-		update: {
-			siteTitle,
-			siteDescription,
-			titleTr: parsed.data.titleTr,
-			titleEn: parsed.data.titleEn,
-			bioTr: parsed.data.bioTr,
-			bioEn: parsed.data.bioEn,
-			photoUrl: parsed.data.photoUrl ?? null,
-			socialLinks: cleanedSocials,
-			skills,
-		},
-	});
+	const record = {
+		id: 1,
+		site_title: siteTitle,
+		site_description: siteDescription,
+		title_tr: parsed.data.titleTr,
+		title_en: parsed.data.titleEn,
+		bio_tr: parsed.data.bioTr,
+		bio_en: parsed.data.bioEn,
+		photo_url: parsed.data.photoUrl ?? null,
+		social_links: cleanedSocials,
+		role_tr: parsed.data.roleTr?.trim() || null,
+		role_en: parsed.data.roleEn?.trim() || null,
+		tagline_tr: parsed.data.taglineTr?.trim() || null,
+		tagline_en: parsed.data.taglineEn?.trim() || null,
+		projects_worked: parsed.data.projectsWorked ?? null,
+		// skills undefined ise alanı gönderme (mevcut değeri koru)
+		...(skills === undefined ? {} : { skills }),
+	};
+
+	const supabase = createSupabaseAdminClient();
+	const { data: updated, error } = await supabase
+		.from("about_content")
+		.upsert(record)
+		.select()
+		.single();
+	if (error) throw error;
 
 	revalidatePath("/", "layout");
 

@@ -33,17 +33,15 @@ export async function Footer() {
 	].filter(Boolean) as { href: string; icon: typeof Github; label: string }[];
 
 	return (
-		<footer className="border-t mt-16">
-			<div className="container mx-auto flex flex-col gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between">
-				<p className="text-sm text-muted-foreground">
-					{t("footer.copyright", { year })}
-				</p>
-				<nav className="flex flex-wrap items-center gap-x-4 gap-y-1">
+		<footer className="mt-20 border-t">
+			<div className="container mx-auto flex flex-col gap-4 px-4 py-8 font-mono text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+				<p>{t("footer.copyright", { year })}</p>
+				<nav className="flex flex-wrap items-center gap-x-5 gap-y-1">
 					{navItems.map((item) => (
 						<Link
 							key={item.href}
 							href={item.href}
-							className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+							className="transition-colors hover:text-primary"
 						>
 							{item.label}
 						</Link>

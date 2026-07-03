@@ -8,13 +8,24 @@
 	},
 	"home": {
 		"title": "I'm Sezer Demir DEDEK",
-		"subtitle": "React.js Developer",
+		"subtitle": "I build modern web interfaces and craft AI-powered tools and agents with Claude Code and the Agent SDK.",
 		"currently": "Currently",
 		"readMore": "Read more",
 		"featuredTitle": "Featured projects",
+		"eyebrow": "Front-End & AI Agent Engineer",
+		"available": "Available for work",
+		"remote": "Remote",
+		"viewAll": "All projects",
+		"letsWork": "Let's build something good together.",
+		"sections": {
+			"work": "Selected work",
+			"stats": "By the numbers",
+			"experience": "Experience",
+			"about": "About"
+		},
 		"stats": {
 			"experience": "Years of experience",
-			"projects": "Projects",
+			"projects": "Projects worked on",
 			"companies": "Companies"
 		}
 	},
@@ -35,7 +46,11 @@
 	},
 	"projects": {
 		"empty": "No projects yet — they will be here soon.",
-		"technologies": "Technologies"
+		"technologies": "Technologies",
+		"lead": "Selected personal and professional work. Filter by tag.",
+		"filterAll": "All",
+		"filterEmpty": "No projects match this filter.",
+		"clearFilter": "Clear filter"
 	},
 	"contact": {
 		"intro": "Use the form below or reach out directly through these channels.",

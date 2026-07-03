@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAdmin } from "@/lib/auth";
 
 const PAGE_KEYS = ["HOME", "ABOUT", "CAREER", "PROJECTS", "CONTACT"] as const;
@@ -47,30 +47,21 @@ export async function PUT(request: Request) {
 		);
 	}
 
-	await prisma.$transaction(
-		parsed.data.pages.map((page) =>
-			prisma.pageSeo.upsert({
-				where: { pageKey: page.pageKey },
-				create: {
-					pageKey: page.pageKey,
-					titleTr: nullable(page.titleTr),
-					titleEn: nullable(page.titleEn),
-					descriptionTr: nullable(page.descriptionTr),
-					descriptionEn: nullable(page.descriptionEn),
-					ogImage: nullable(page.ogImage ?? null),
-					noIndex: page.noIndex ?? false,
-				},
-				update: {
-					titleTr: nullable(page.titleTr),
-					titleEn: nullable(page.titleEn),
-					descriptionTr: nullable(page.descriptionTr),
-					descriptionEn: nullable(page.descriptionEn),
-					ogImage: nullable(page.ogImage ?? null),
-					noIndex: page.noIndex ?? false,
-				},
-			}),
-		),
-	);
+	const records = parsed.data.pages.map((page) => ({
+		page_key: page.pageKey,
+		title_tr: nullable(page.titleTr),
+		title_en: nullable(page.titleEn),
+		description_tr: nullable(page.descriptionTr),
+		description_en: nullable(page.descriptionEn),
+		og_image: nullable(page.ogImage ?? null),
+		no_index: page.noIndex ?? false,
+	}));
+
+	const supabase = createSupabaseAdminClient();
+	const { error } = await supabase
+		.from("page_seo")
+		.upsert(records, { onConflict: "page_key" });
+	if (error) throw error;
 
 	revalidatePath("/", "layout");
 

@@ -16,7 +16,7 @@ export function NavLinks({ items }: NavLinksProps) {
 	const pathname = usePathname();
 
 	return (
-		<nav className="hidden md:flex items-center gap-1">
+		<nav className="hidden items-center gap-6 md:flex">
 			{items.map((item) => {
 				const active = isActivePath(pathname, item.href);
 				return (
@@ -25,10 +25,11 @@ export function NavLinks({ items }: NavLinksProps) {
 						href={item.href}
 						aria-current={active ? "page" : undefined}
 						className={cn(
-							"rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+							"relative py-1 font-mono text-[0.78rem] tracking-wide transition-colors",
+							"after:absolute after:-bottom-0.5 after:left-0 after:h-[1.5px] after:w-full after:origin-left after:bg-primary after:transition-transform after:duration-200",
 							active
-								? "bg-accent text-accent-foreground"
-								: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+								? "text-foreground after:scale-x-100"
+								: "text-muted-foreground after:scale-x-0 hover:text-foreground hover:after:scale-x-100",
 						)}
 					>
 						{item.label}

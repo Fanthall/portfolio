@@ -1,57 +1,40 @@
-# portfolio production stack — sadece app + db.
-# Caddy ayrı bir stack'te (../infra/) merkezi reverse proxy olarak çalışıyor.
-# Aynı VPS'te birden fazla site host etmek için bu pattern kullanılır.
-# Tek site host etsen bile bu yapı çalışır; sadece infra'yı da ayağa kaldırman gerek.
+# Portfolio production — Supabase-native (Prisma/Postgres YOK).
+# DB + Auth + Storage = Supabase (cloud proje). Bu stack sadece Next.js app'i.
+# Caddy ayrı bir stack'te (../infra/) merkezi reverse proxy olarak çalışır.
+#
+# Gerekli env (.env veya deploy ortamı):
+#   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY  (build-time, client'a gömülür)
+#   SUPABASE_SERVICE_ROLE_KEY                                (runtime, GİZLİ)
+#   NEXT_PUBLIC_SITE_URL
+#   SUPABASE_BUCKET_IMAGES / _DEMOS / _DOWNLOADS             (opsiyonel, default images/demos/downloads)
 
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: portfolio-prod-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - portfolio-prod-db:/var/lib/postgresql/data
-    networks:
-      - internal
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-    # No `ports:` — DB sadece bu stack'in iç network'ünde
-
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
     image: portfolio-app:latest
     container_name: portfolio-prod-app
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3001
       HOSTNAME: 0.0.0.0
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-43200}
-      ADMIN_BOOTSTRAP_EMAIL: ${ADMIN_BOOTSTRAP_EMAIL}
-      ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
-    volumes:
-      - portfolio-uploads:/app/public/uploads
-      - portfolio-demos:/app/public/demos
-      - portfolio-downloads:/app/public/downloads
+      SUPABASE_BUCKET_IMAGES: ${SUPABASE_BUCKET_IMAGES:-images}
+      SUPABASE_BUCKET_DEMOS: ${SUPABASE_BUCKET_DEMOS:-demos}
+      SUPABASE_BUCKET_DOWNLOADS: ${SUPABASE_BUCKET_DOWNLOADS:-downloads}
     networks:
-      - internal   # DB ile konuşmak için
-      - web        # Caddy reverse proxy bu network üzerinden ulaşır
+      - web # Caddy reverse proxy bu network üzerinden ulaşır
     expose:
-      - "3001"     # Sadece Docker network içinde, host'a açık değil
+      - "3001" # Sadece Docker network içinde, host'a açık değil
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3001/ > /dev/null || exit 1"]
       interval: 30s
@@ -59,18 +42,8 @@ services:
       retries: 5
       start_period: 30s
 
-volumes:
-  portfolio-prod-db:
-  portfolio-uploads:
-  portfolio-demos:
-  portfolio-downloads:
-
 networks:
-  internal:
-    # portfolio app + db arası özel network
-    driver: bridge
   web:
-    # Caddy reverse proxy ile paylaşılan network
-    # ../infra/docker-compose.yml çalıştırıldığında oluşur, external olarak referans verilir
+    # Caddy reverse proxy ile paylaşılan network (../infra tarafından oluşturulur)
     external: true
     name: web

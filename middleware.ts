@@ -1,28 +1,32 @@
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
-
-const ADMIN_SESSION_COOKIE = "admin_session";
+import { updateSession } from "./lib/supabase/middleware";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
-	// Admin: locale yok, yalnız oturum cookie'si varlık kontrolü
-	// (asıl doğrulama admin layout'taki getCurrentAdmin'de).
+	// Admin: locale yok. Supabase oturumunu tazele + gercek kullanici kontrolu.
 	if (pathname.startsWith("/admin")) {
+		const { supabaseResponse, user } = await updateSession(request);
+
 		if (pathname === "/admin/login") {
-			return NextResponse.next();
+			return supabaseResponse;
 		}
-		const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
-		if (token) {
-			return NextResponse.next();
+
+		if (!user) {
+			const loginUrl = request.nextUrl.clone();
+			loginUrl.pathname = "/admin/login";
+			loginUrl.searchParams.set("from", pathname);
+			const redirectRes = NextResponse.redirect(loginUrl);
+			// Tazelenen auth cookie'lerini redirect'e tasi
+			supabaseResponse.cookies.getAll().forEach((c) => redirectRes.cookies.set(c));
+			return redirectRes;
 		}
-		const loginUrl = request.nextUrl.clone();
-		loginUrl.pathname = "/admin/login";
-		loginUrl.searchParams.set("from", pathname);
-		return NextResponse.redirect(loginUrl);
+
+		return supabaseResponse;
 	}
 
 	// Public rotalar: next-intl locale çözümleme (URL prefix + redirect/rewrite)

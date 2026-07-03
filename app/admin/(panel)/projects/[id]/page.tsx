@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { mapProject, mapProjectImage } from "@/lib/data/types";
 import { Button } from "@/components/ui/button";
 import { ProjectAssets } from "@/components/admin/ProjectAssets";
 import { ProjectForm, type ProjectFormValues } from "@/components/admin/ProjectForm";
@@ -15,12 +16,19 @@ interface PageProps {
 
 export default async function EditProjectPage({ params }: PageProps) {
 	const { id } = await params;
-	const project = await prisma.project.findUnique({
-		where: { id },
-		include: { images: { orderBy: { order: "asc" } } },
-	});
+	const supabase = createSupabaseAdminClient();
+	const { data: row } = await supabase
+		.from("project")
+		.select("*, project_image(*)")
+		.eq("id", id)
+		.maybeSingle();
 
-	if (!project) notFound();
+	if (!row) notFound();
+
+	const project = mapProject(row);
+	const images = (Array.isArray(row.project_image) ? row.project_image : [])
+		.map(mapProjectImage)
+		.sort((a, b) => a.order - b.order);
 
 	const initial: ProjectFormValues = {
 		id: project.id,
@@ -68,7 +76,7 @@ export default async function EditProjectPage({ params }: PageProps) {
 
 				<ProjectGallery
 					projectId={project.id}
-					initial={project.images.map((img) => ({
+					initial={images.map((img) => ({
 						id: img.id,
 						url: img.url,
 						altTr: img.altTr ?? "",

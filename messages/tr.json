@@ -8,13 +8,24 @@
 	},
 	"home": {
 		"title": "Ben Sezer Demir DEDEK",
-		"subtitle": "React.js Geliştirici",
+		"subtitle": "Modern web arayüzleri kuruyor; Claude Code ve Agent SDK ile yapay zeka destekli araçlar ve ajanlar geliştiriyorum.",
 		"currently": "Şu an",
 		"readMore": "Devamını oku",
 		"featuredTitle": "Öne çıkan projeler",
+		"eyebrow": "Front-End & AI Ajan Geliştirici",
+		"available": "Şu an müsait",
+		"remote": "Uzaktan",
+		"viewAll": "Tüm projeler",
+		"letsWork": "Birlikte iyi bir şey yapalım.",
+		"sections": {
+			"work": "Seçili işler",
+			"stats": "Sayılarla",
+			"experience": "Deneyim",
+			"about": "Hakkımda"
+		},
 		"stats": {
 			"experience": "Yıl deneyim",
-			"projects": "Proje",
+			"projects": "Çalışılan proje",
 			"companies": "Şirket"
 		}
 	},
@@ -35,7 +46,11 @@
 	},
 	"projects": {
 		"empty": "Henüz proje eklenmedi — yakında burada olacaklar.",
-		"technologies": "Teknolojiler"
+		"technologies": "Teknolojiler",
+		"lead": "Seçili kişisel ve profesyonel çalışmalar. Etikete göre süzebilirsin.",
+		"filterAll": "Tümü",
+		"filterEmpty": "Bu filtreyle eşleşen proje yok.",
+		"clearFilter": "Filtreyi temizle"
 	},
 	"contact": {
 		"intro": "Aşağıdaki formdan veya doğrudan kanallardan ulaşabilirsin.",

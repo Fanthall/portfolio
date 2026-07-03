@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { cookies } from "next/headers";
@@ -12,9 +12,26 @@ import "./globals.css";
 // path-based locale geçişiyle (redesign-2026 K3) birlikte ele alınacak.
 export const dynamic = "force-dynamic";
 
+// Studio Ink tipografisi: Inter (gövde) + Space Grotesk (display) + JetBrains Mono (etiket).
+// next/font ile self-host + CSS değişkeni (tailwind fontFamily buna bağlanır).
 const inter = Inter({
 	subsets: ["latin", "latin-ext"],
 	display: "swap",
+	variable: "--font-sans",
+});
+
+const spaceGrotesk = Space_Grotesk({
+	subsets: ["latin", "latin-ext"],
+	weight: ["500", "600", "700"],
+	display: "swap",
+	variable: "--font-display",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+	subsets: ["latin", "latin-ext"],
+	weight: ["400", "500"],
+	display: "swap",
+	variable: "--font-mono",
 });
 
 const FALLBACK_TITLE = "Sezer Demir DEDEK";
@@ -85,7 +102,9 @@ export default async function RootLayout({
 			className={theme === "dark" ? "dark" : ""}
 			suppressHydrationWarning
 		>
-			<body className={inter.className}>
+			<body
+				className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+			>
 				<NextIntlClientProvider locale={locale} messages={messages}>
 					<Providers>{children}</Providers>
 				</NextIntlClientProvider>

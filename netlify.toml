@@ -1,0 +1,16 @@
+# Netlify — Next.js 15 App Router (SSR + middleware). @netlify/plugin-nextjs
+# otomatik yuklenir; standalone next.config'te NETLIFY ile devre disi birakilir.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Gerekli env degiskenleri (Netlify site ayarlarindan girilir — burada TUTULMAZ):
+#   NEXT_PUBLIC_SUPABASE_URL         (build + runtime)
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY    (build + runtime)
+#   SUPABASE_SERVICE_ROLE_KEY        (runtime, GIZLI/secret)
+#   NEXT_PUBLIC_SITE_URL             (prod domain)
+#   SUPABASE_BUCKET_IMAGES/_DEMOS/_DOWNLOADS  (opsiyonel)

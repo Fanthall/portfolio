@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/supabase/database.types";
 import { getCurrentAdmin } from "@/lib/auth";
+
+type WorkUpdate = Database["public"]["Tables"]["work_experience"]["Update"];
 
 const patchSchema = z.object({
 	companyName: z.string().min(1).max(200).optional(),
@@ -46,25 +49,31 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 		);
 	}
 
-	const data: Record<string, unknown> = {};
-	if (parsed.data.companyName !== undefined) data.companyName = parsed.data.companyName.trim();
-	if (parsed.data.roleTr !== undefined) data.roleTr = parsed.data.roleTr.trim();
-	if (parsed.data.roleEn !== undefined) data.roleEn = parsed.data.roleEn.trim();
-	if (parsed.data.descTr !== undefined) data.descTr = parsed.data.descTr.trim();
-	if (parsed.data.descEn !== undefined) data.descEn = parsed.data.descEn.trim();
-	if (parsed.data.startDate !== undefined) data.startDate = new Date(parsed.data.startDate);
+	const toDate = (v: string) => new Date(v).toISOString().slice(0, 10);
+	const data: WorkUpdate = {};
+	if (parsed.data.companyName !== undefined) data.company_name = parsed.data.companyName.trim();
+	if (parsed.data.roleTr !== undefined) data.role_tr = parsed.data.roleTr.trim();
+	if (parsed.data.roleEn !== undefined) data.role_en = parsed.data.roleEn.trim();
+	if (parsed.data.descTr !== undefined) data.desc_tr = parsed.data.descTr.trim();
+	if (parsed.data.descEn !== undefined) data.desc_en = parsed.data.descEn.trim();
+	if (parsed.data.startDate !== undefined) data.start_date = toDate(parsed.data.startDate);
 	if (parsed.data.endDate !== undefined) {
-		data.endDate = parsed.data.endDate ? new Date(parsed.data.endDate) : null;
+		data.end_date = parsed.data.endDate ? toDate(parsed.data.endDate) : null;
 	}
 	if (parsed.data.order !== undefined) data.order = parsed.data.order;
 
-	try {
-		const updated = await prisma.workExperience.update({ where: { id }, data });
-		revalidatePath("/", "layout");
-		return NextResponse.json({ ok: true, experience: updated });
-	} catch {
+	const supabase = createSupabaseAdminClient();
+	const { data: updated, error } = await supabase
+		.from("work_experience")
+		.update(data)
+		.eq("id", id)
+		.select()
+		.maybeSingle();
+	if (error || !updated) {
 		return NextResponse.json({ error: "not_found" }, { status: 404 });
 	}
+	revalidatePath("/", "layout");
+	return NextResponse.json({ ok: true, experience: updated });
 }
 
 export async function DELETE(_request: Request, { params }: RouteContext) {
@@ -72,11 +81,16 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
 	if (!admin) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
 	const { id } = await params;
-	try {
-		await prisma.workExperience.delete({ where: { id } });
-		revalidatePath("/", "layout");
-		return NextResponse.json({ ok: true });
-	} catch {
+	const supabase = createSupabaseAdminClient();
+	const { data: deleted, error } = await supabase
+		.from("work_experience")
+		.delete()
+		.eq("id", id)
+		.select()
+		.maybeSingle();
+	if (error || !deleted) {
 		return NextResponse.json({ error: "not_found" }, { status: 404 });
 	}
+	revalidatePath("/", "layout");
+	return NextResponse.json({ ok: true });
 }

@@ -6,7 +6,7 @@ import { ArrowLeft, Github } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "@/i18n/navigation";
 import { buildLanguageAlternates, localizeUrl } from "@/lib/site";
-import { prisma } from "@/lib/db";
+import { getProjectBySlug } from "@/lib/data/queries";
 import { Button } from "@/components/ui/button";
 import { ProjectDemo } from "@/components/ProjectDemo";
 import type { Locale } from "@/i18n/routing";
@@ -18,7 +18,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
 	const { slug } = await params;
 	const locale = (await getLocale()) as Locale;
-	const project = await prisma.project.findUnique({ where: { slug } });
+	const project = await getProjectBySlug(slug);
 	if (!project) return { title: "Not found" };
 	const title = locale === "tr" ? project.titleTr : project.titleEn;
 	const description = locale === "tr" ? project.summaryTr : project.summaryEn;
@@ -38,10 +38,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 	const locale = (await getLocale()) as Locale;
 	const t = await getTranslations();
 
-	const project = await prisma.project.findUnique({
-		where: { slug },
-		include: { images: { orderBy: { order: "asc" } } },
-	});
+	const project = await getProjectBySlug(slug);
 
 	if (!project) notFound();
 

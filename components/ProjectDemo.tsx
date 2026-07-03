@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Download, ExternalLink } from "lucide-react";
-import type { Project, ProjectImage as ProjectImageRow } from "@prisma/client";
+import type { Project, ProjectImage as ProjectImageRow } from "@/lib/data/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 

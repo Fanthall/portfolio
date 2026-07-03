@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/supabase/database.types";
 import { getCurrentAdmin } from "@/lib/auth";
+
+type ProjectUpdate = Database["public"]["Tables"]["project"]["Update"];
 
 const DEMO_TYPES = [
 	"EXTERNAL_LINK",
@@ -65,40 +68,49 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 		);
 	}
 
+	const supabase = createSupabaseAdminClient();
+
 	if (parsed.data.slug) {
-		const other = await prisma.project.findFirst({
-			where: { slug: parsed.data.slug, NOT: { id } },
-		});
+		const { data: other } = await supabase
+			.from("project")
+			.select("id")
+			.eq("slug", parsed.data.slug)
+			.neq("id", id)
+			.maybeSingle();
 		if (other) return NextResponse.json({ error: "slug_taken" }, { status: 409 });
 	}
 
-	const data: Record<string, unknown> = {};
+	const data: ProjectUpdate = {};
 	const d = parsed.data;
 	if (d.slug !== undefined) data.slug = d.slug;
-	if (d.titleTr !== undefined) data.titleTr = d.titleTr.trim();
-	if (d.titleEn !== undefined) data.titleEn = d.titleEn.trim();
-	if (d.summaryTr !== undefined) data.summaryTr = d.summaryTr.trim();
-	if (d.summaryEn !== undefined) data.summaryEn = d.summaryEn.trim();
-	if (d.descTr !== undefined) data.descTr = d.descTr.trim();
-	if (d.descEn !== undefined) data.descEn = d.descEn.trim();
-	if (d.coverImage !== undefined) data.coverImage = emptyToNull(d.coverImage);
-	if (d.demoType !== undefined) data.demoType = d.demoType;
-	if (d.demoUrl !== undefined) data.demoUrl = emptyToNull(d.demoUrl);
-	if (d.demoFolder !== undefined) data.demoFolder = emptyToNull(d.demoFolder);
-	if (d.downloadUrl !== undefined) data.downloadUrl = emptyToNull(d.downloadUrl);
-	if (d.videoUrl !== undefined) data.videoUrl = emptyToNull(d.videoUrl);
-	if (d.repoUrl !== undefined) data.repoUrl = emptyToNull(d.repoUrl);
+	if (d.titleTr !== undefined) data.title_tr = d.titleTr.trim();
+	if (d.titleEn !== undefined) data.title_en = d.titleEn.trim();
+	if (d.summaryTr !== undefined) data.summary_tr = d.summaryTr.trim();
+	if (d.summaryEn !== undefined) data.summary_en = d.summaryEn.trim();
+	if (d.descTr !== undefined) data.desc_tr = d.descTr.trim();
+	if (d.descEn !== undefined) data.desc_en = d.descEn.trim();
+	if (d.coverImage !== undefined) data.cover_image = emptyToNull(d.coverImage);
+	if (d.demoType !== undefined) data.demo_type = d.demoType;
+	if (d.demoUrl !== undefined) data.demo_url = emptyToNull(d.demoUrl);
+	if (d.demoFolder !== undefined) data.demo_folder = emptyToNull(d.demoFolder);
+	if (d.downloadUrl !== undefined) data.download_url = emptyToNull(d.downloadUrl);
+	if (d.videoUrl !== undefined) data.video_url = emptyToNull(d.videoUrl);
+	if (d.repoUrl !== undefined) data.repo_url = emptyToNull(d.repoUrl);
 	if (d.tags !== undefined) data.tags = d.tags.map((t) => t.trim()).filter(Boolean);
-	if (d.isFeatured !== undefined) data.isFeatured = d.isFeatured;
+	if (d.isFeatured !== undefined) data.is_featured = d.isFeatured;
 	if (d.order !== undefined) data.order = d.order;
 
-	try {
-		const updated = await prisma.project.update({ where: { id }, data });
-		revalidatePath("/", "layout");
-		return NextResponse.json({ ok: true, project: updated });
-	} catch {
+	const { data: updated, error } = await supabase
+		.from("project")
+		.update(data)
+		.eq("id", id)
+		.select()
+		.maybeSingle();
+	if (error || !updated) {
 		return NextResponse.json({ error: "not_found" }, { status: 404 });
 	}
+	revalidatePath("/", "layout");
+	return NextResponse.json({ ok: true, project: updated });
 }
 
 export async function DELETE(_request: Request, { params }: RouteContext) {
@@ -106,11 +118,16 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
 	if (!admin) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
 	const { id } = await params;
-	try {
-		await prisma.project.delete({ where: { id } });
-		revalidatePath("/", "layout");
-		return NextResponse.json({ ok: true });
-	} catch {
+	const supabase = createSupabaseAdminClient();
+	const { data: deleted, error } = await supabase
+		.from("project")
+		.delete()
+		.eq("id", id)
+		.select()
+		.maybeSingle();
+	if (error || !deleted) {
 		return NextResponse.json({ error: "not_found" }, { status: 404 });
 	}
+	revalidatePath("/", "layout");
+	return NextResponse.json({ ok: true });
 }

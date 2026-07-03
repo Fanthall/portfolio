@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { mapPageSeo } from "@/lib/data/types";
 import { AdminSeoForm } from "@/components/admin/AdminSeoForm";
 
 export const metadata = { title: "SEO — Admin" };
@@ -14,7 +15,9 @@ const PAGE_LABELS: Record<(typeof PAGE_KEYS)[number], { tr: string; path: string
 };
 
 export default async function AdminSeoPage() {
-	const rows = await prisma.pageSeo.findMany();
+	const supabase = createSupabaseAdminClient();
+	const { data } = await supabase.from("page_seo").select("*");
+	const rows = (data ?? []).map(mapPageSeo);
 	const byKey = new Map(rows.map((r) => [r.pageKey, r]));
 
 	const initial = PAGE_KEYS.map((key) => {

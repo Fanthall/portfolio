@@ -1,3 +1,5 @@
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
 	darkMode: ["class"],
@@ -14,6 +16,12 @@ module.exports = {
 			},
 		},
 		extend: {
+			fontFamily: {
+				// Studio Ink tipografisi (next/font CSS değişkenleri app/layout.tsx'te)
+				sans: ["var(--font-sans)", ...defaultTheme.fontFamily.sans],
+				display: ["var(--font-display)", "var(--font-sans)", ...defaultTheme.fontFamily.sans],
+				mono: ["var(--font-mono)", ...defaultTheme.fontFamily.mono],
+			},
 			colors: {
 				border: "hsl(var(--border))",
 				input: "hsl(var(--input))",

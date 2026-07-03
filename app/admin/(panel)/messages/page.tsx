@@ -1,12 +1,17 @@
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { mapContact } from "@/lib/data/types";
 import { MessagesList } from "@/components/admin/MessagesList";
 
 export const metadata = { title: "Mesajlar — Admin" };
 
 export default async function AdminMessagesPage() {
-	const messages = await prisma.contactMessage.findMany({
-		orderBy: [{ isRead: "asc" }, { createdAt: "desc" }],
-	});
+	const supabase = createSupabaseAdminClient();
+	const { data } = await supabase
+		.from("contact_message")
+		.select("*")
+		.order("is_read", { ascending: true })
+		.order("created_at", { ascending: false });
+	const messages = (data ?? []).map(mapContact);
 
 	const unreadCount = messages.filter((m) => !m.isRead).length;
 

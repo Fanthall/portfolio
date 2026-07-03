@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
-import { writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { BUCKETS } from "@/lib/supabase/storage";
 import { getCurrentAdmin } from "@/lib/auth";
 
 const ALLOWED_MIME = new Map<string, string>([
@@ -35,13 +35,21 @@ export async function POST(request: Request) {
 		return NextResponse.json({ error: "file_too_large", maxBytes: MAX_SIZE }, { status: 413 });
 	}
 
-	const uploadsDir = path.join(process.cwd(), "public", "uploads");
-	await mkdir(uploadsDir, { recursive: true });
-
-	const filename = `${randomUUID()}.${ext}`;
+	const supabase = createSupabaseAdminClient();
+	const objectPath = `${randomUUID()}.${ext}`;
 	const buffer = Buffer.from(await file.arrayBuffer());
-	await writeFile(path.join(uploadsDir, filename), buffer);
 
-	const url = `/uploads/${filename}`;
-	return NextResponse.json({ url });
+	const { error } = await supabase.storage.from(BUCKETS.images).upload(objectPath, buffer, {
+		contentType: file.type,
+		upsert: false,
+	});
+	if (error) {
+		return NextResponse.json({ error: "upload_failed", detail: error.message }, { status: 500 });
+	}
+
+	const {
+		data: { publicUrl },
+	} = supabase.storage.from(BUCKETS.images).getPublicUrl(objectPath);
+
+	return NextResponse.json({ url: publicUrl });
 }

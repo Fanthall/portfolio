@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 export const metadata: Metadata = {
@@ -21,7 +21,12 @@ export default async function AdminPanelLayout({
 	const admin = await getCurrentAdmin();
 	if (!admin) redirect("/admin/login");
 
-	const unreadCount = await prisma.contactMessage.count({ where: { isRead: false } });
+	const supabase = createSupabaseAdminClient();
+	const { count } = await supabase
+		.from("contact_message")
+		.select("*", { count: "exact", head: true })
+		.eq("is_read", false);
+	const unreadCount = count ?? 0;
 
 	return (
 		<div className="min-h-screen bg-background">

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createContactMessage } from "@/lib/data/queries";
 
 const contactSchema = z.object({
 	name: z.string().min(2).max(120),
@@ -25,13 +25,11 @@ export async function POST(request: Request) {
 		);
 	}
 
-	await prisma.contactMessage.create({
-		data: {
-			name: parsed.data.name,
-			email: parsed.data.email,
-			subject: parsed.data.subject ?? null,
-			body: parsed.data.body,
-		},
+	await createContactMessage({
+		name: parsed.data.name,
+		email: parsed.data.email,
+		subject: parsed.data.subject ?? null,
+		body: parsed.data.body,
 	});
 
 	return NextResponse.json({ ok: true }, { status: 201 });

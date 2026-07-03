@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAdmin } from "@/lib/auth";
 
 const createSchema = z.object({
@@ -31,21 +31,32 @@ export async function POST(request: Request, { params }: RouteContext) {
 		return NextResponse.json({ error: "validation_error" }, { status: 400 });
 	}
 
-	const project = await prisma.project.findUnique({
-		where: { id },
-		include: { _count: { select: { images: true } } },
-	});
+	const supabase = createSupabaseAdminClient();
+
+	const { data: project } = await supabase
+		.from("project")
+		.select("id")
+		.eq("id", id)
+		.maybeSingle();
 	if (!project) return NextResponse.json({ error: "project_not_found" }, { status: 404 });
 
-	const image = await prisma.projectImage.create({
-		data: {
-			projectId: id,
+	const { count: imageCount } = await supabase
+		.from("project_image")
+		.select("*", { count: "exact", head: true })
+		.eq("project_id", id);
+
+	const { data: image, error } = await supabase
+		.from("project_image")
+		.insert({
+			project_id: id,
 			url: parsed.data.url,
-			altTr: parsed.data.altTr ?? null,
-			altEn: parsed.data.altEn ?? null,
-			order: project._count.images,
-		},
-	});
+			alt_tr: parsed.data.altTr ?? null,
+			alt_en: parsed.data.altEn ?? null,
+			order: imageCount ?? 0,
+		})
+		.select()
+		.single();
+	if (error) throw error;
 
 	revalidatePath("/", "layout");
 	return NextResponse.json({ ok: true, image }, { status: 201 });

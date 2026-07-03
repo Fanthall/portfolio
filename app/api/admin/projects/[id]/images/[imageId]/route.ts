@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAdmin } from "@/lib/auth";
 
 interface RouteContext {
@@ -12,11 +12,17 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
 	if (!admin) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
 	const { id, imageId } = await params;
-	try {
-		await prisma.projectImage.delete({ where: { id: imageId, projectId: id } });
-		revalidatePath("/", "layout");
-		return NextResponse.json({ ok: true });
-	} catch {
+	const supabase = createSupabaseAdminClient();
+	const { data: deleted, error } = await supabase
+		.from("project_image")
+		.delete()
+		.eq("id", imageId)
+		.eq("project_id", id)
+		.select()
+		.maybeSingle();
+	if (error || !deleted) {
 		return NextResponse.json({ error: "not_found" }, { status: 404 });
 	}
+	revalidatePath("/", "layout");
+	return NextResponse.json({ ok: true });
 }

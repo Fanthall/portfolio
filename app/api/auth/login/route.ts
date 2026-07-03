@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
-import { setSessionCookie, signSession } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const loginSchema = z.object({
 	email: z.string().email(),
-	password: z.string().min(8).max(200),
+	password: z.string().min(1).max(200),
 });
 
 export async function POST(request: Request) {
@@ -23,18 +21,14 @@ export async function POST(request: Request) {
 	}
 
 	const { email, password } = parsed.data;
-	const admin = await prisma.adminUser.findUnique({ where: { email } });
-	if (!admin) {
+	// Supabase Auth — signInWithPassword server client uzerinden cagrilinca
+	// oturum cookie'leri otomatik yazilir (@supabase/ssr).
+	const supabase = await createSupabaseServerClient();
+	const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+	if (error) {
 		return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
 	}
-
-	const ok = await bcrypt.compare(password, admin.passwordHash);
-	if (!ok) {
-		return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
-	}
-
-	const token = signSession({ sub: admin.id, email: admin.email });
-	await setSessionCookie(token);
 
 	return NextResponse.json({ ok: true });
 }
