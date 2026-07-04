@@ -112,6 +112,11 @@ export default async function HomePage() {
 
 	const projectsStat = about?.projectsWorked ?? Math.max(projectCount, PROJECTS_WORKED);
 	const presentLabel = t("career.present");
+	const monthYear = (d: Date) =>
+		new Intl.DateTimeFormat(locale === "tr" ? "tr-TR" : "en-US", {
+			year: "numeric",
+			month: "short",
+		}).format(d);
 	const topExperiences = (professional.length > 0 ? professional : experiences).slice(0, 4);
 	const marqueeItems = [...techHighlights, ...techHighlights];
 
@@ -244,8 +249,8 @@ export default async function HomePage() {
 							{topExperiences.map((e) => (
 								<div key={e.id} className="row">
 									<span className="when">
-										{e.startDate.getFullYear()} —{" "}
-										{e.endDate ? e.endDate.getFullYear() : presentLabel}
+										{monthYear(e.startDate)} —{" "}
+										{e.endDate ? monthYear(e.endDate) : presentLabel}
 									</span>
 									<div className="what">
 										<h4>{locale === "tr" ? e.roleTr : e.roleEn}</h4>
