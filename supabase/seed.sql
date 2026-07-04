@@ -83,6 +83,23 @@ insert into project (slug, title_tr, title_en, summary_tr, summary_en, desc_tr, 
    array['NestJS','Prisma','PostgreSQL','Docker','Electron','AES-256-GCM'], true, 1)
 on conflict (slug) do nothing;
 
+insert into project (slug, title_tr, title_en, summary_tr, summary_en, desc_tr, desc_en, demo_type, demo_url, tags, is_featured, "order") values
+  ('quicktools', 'QuickTools', 'QuickTools',
+   '22 araçlık, tamamen istemci-taraflı web araç paketi — statik export, çift dilli.',
+   'A 22-tool, fully client-side web toolkit — static export, bilingual.',
+   'Next.js + TypeScript + Tailwind ile kurulu, tamamen istemci-taraflı çalışan 22 araçlık paket. Statik export (SSR yok), çift dilli (TR/EN), her araç tarayıcıda çalışır — dosyalar sunucuya gitmez.',
+   'A 22-tool suite built with Next.js + TypeScript + Tailwind, running fully client-side. Static export (no SSR), bilingual (TR/EN); every tool runs in the browser — files never leave the device.',
+   'EXTERNAL_LINK', 'https://quicktools-app.netlify.app',
+   array['Next.js','TypeScript','Tailwind','next-intl'], true, 2),
+  ('stash', 'Stash', 'Stash',
+   'Offline-first ev ve stok takip mobil uygulaması — bildirimler, istatistikler, çift dil.',
+   'Offline-first home & stock tracking mobile app — reminders, stats, bilingual.',
+   'React Native + Expo ile geliştirilen offline-first ev ve stok takip uygulaması. SQLite yerel veritabanı, bakım/son-kullanma hatırlatmaları, istatistikler ve çift dil desteği.',
+   'An offline-first home & stock tracking app built with React Native + Expo. Local SQLite database, maintenance/expiry reminders, statistics and bilingual support.',
+   'GALLERY_ONLY', null,
+   array['React Native','Expo','SQLite','Zustand'], true, 3)
+on conflict (slug) do nothing;
+
 -- ---------------------------------------------------------------------------
 -- page_seo (5 sayfa bos kayit)
 -- ---------------------------------------------------------------------------

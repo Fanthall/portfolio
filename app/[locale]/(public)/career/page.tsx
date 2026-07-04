@@ -1,9 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { Building2 } from "lucide-react";
 import { getWorkExperiences } from "@/lib/data/queries";
 import type { WorkExperience } from "@/lib/data/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { getPageMetadata } from "@/lib/seo";
 import type { Locale } from "@/i18n/request";
 
@@ -16,30 +13,25 @@ function formatMonth(date: Date, locale: Locale) {
 	}).format(date);
 }
 
-function formatPeriod(start: Date, end: Date | null, locale: Locale, presentLabel: string) {
-	const startStr = formatMonth(start, locale);
-	const endStr = end ? formatMonth(end, locale) : presentLabel;
-	return `${startStr} — ${endStr}`;
+function formatPeriod(start: Date, end: Date | null, locale: Locale, present: string) {
+	return `${formatMonth(start, locale)} — ${end ? formatMonth(end, locale) : present}`;
 }
 
 interface CompanyGroup {
 	companyName: string;
 	earliestStart: Date;
-	latestEnd: Date | null; // null = at least one active
+	latestEnd: Date | null;
 	hasActive: boolean;
 	positions: WorkExperience[];
 }
 
 function groupByCompany(experiences: WorkExperience[]): CompanyGroup[] {
 	const map = new Map<string, CompanyGroup>();
-
 	for (const exp of experiences) {
 		const existing = map.get(exp.companyName);
 		if (existing) {
 			existing.positions.push(exp);
-			if (exp.startDate < existing.earliestStart) {
-				existing.earliestStart = exp.startDate;
-			}
+			if (exp.startDate < existing.earliestStart) existing.earliestStart = exp.startDate;
 			if (exp.endDate === null) {
 				existing.hasActive = true;
 				existing.latestEnd = null;
@@ -56,20 +48,14 @@ function groupByCompany(experiences: WorkExperience[]): CompanyGroup[] {
 			});
 		}
 	}
-
 	const groups = Array.from(map.values());
-	for (const g of groups) {
-		g.positions.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
-	}
-
-	// Order: active groups first, then by latestEnd / earliestStart desc
+	for (const g of groups) g.positions.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
 	groups.sort((a, b) => {
 		if (a.hasActive !== b.hasActive) return a.hasActive ? -1 : 1;
 		const aRef = a.latestEnd ?? a.earliestStart;
 		const bRef = b.latestEnd ?? b.earliestStart;
 		return bRef.getTime() - aRef.getTime();
 	});
-
 	return groups;
 }
 
@@ -78,83 +64,60 @@ export default async function CareerPage() {
 	const t = await getTranslations();
 	const experiences = await getWorkExperiences();
 	const groups = groupByCompany(experiences);
-
+	const present = t("career.present");
 	const activeLabel = t("career.active");
-	const presentLabel = t("career.present");
 
 	return (
-		<div className="container mx-auto px-4 py-12 md:py-20 max-w-3xl animate-fade-in">
-			<h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-10">
-				{t("header.career")}
-			</h1>
+		<div className="wrap page">
+			<div className="page-head">
+				<span className="eyebrow">{t("header.career")}</span>
+				<h1>{locale === "tr" ? "Çalıştığım yerler" : "Where I've worked"}</h1>
+				<p>
+					{locale === "tr"
+						? "Şirkete göre gruplanmış deneyim; aktif rol yeşil ile işaretli."
+						: "Experience grouped by company; the active role is marked green."}
+				</p>
+			</div>
 
-			<ol className="space-y-4">
+			<div className="timeline">
 				{groups.map((group) => (
-					<li key={group.companyName}>
-						<Card
-							className={cn(
-								"transition-shadow",
-								group.hasActive && "ring-1 ring-emerald-500/40",
+					<div key={group.companyName} className={`company${group.hasActive ? " active" : ""}`}>
+						<div className="chead">
+							<div>
+								<div className="cname">{group.companyName.split(" — ")[0]}</div>
+								<div className="cspan">
+									{formatPeriod(group.earliestStart, group.latestEnd, locale, present)}
+								</div>
+							</div>
+							{group.hasActive && (
+								<span className="live">
+									<span className="dot" />
+									{activeLabel}
+								</span>
 							)}
-						>
-							<CardContent className="p-6">
-								<header className="flex flex-wrap items-start justify-between gap-3 mb-4">
-									<div className="flex items-start gap-3 min-w-0">
-										<div className="h-10 w-10 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-											<Building2 className="h-5 w-5" />
-										</div>
-										<div className="min-w-0">
-											<h2 className="font-semibold text-base leading-tight">
-												{group.companyName}
-											</h2>
-											<p className="text-xs text-muted-foreground mt-1">
-												{formatPeriod(group.earliestStart, group.latestEnd, locale, presentLabel)}
-											</p>
-										</div>
+						</div>
+						<div className="roles">
+							{group.positions.map((pos) => (
+								<div
+									key={pos.id}
+									className={`role-item${pos.endDate === null ? " live" : ""}`}
+								>
+									<div className="rp">
+										{formatPeriod(pos.startDate, pos.endDate, locale, present)}
 									</div>
-									{group.hasActive && (
-										<span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
-											<span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-											{activeLabel}
-										</span>
-									)}
-								</header>
-
-								<ol className="relative border-s border-border ml-5 space-y-5">
-									{group.positions.map((pos) => {
-										const isActive = pos.endDate === null;
-										return (
-											<li key={pos.id} className="ms-5">
-												<span
-													className={cn(
-														"absolute -start-[7px] mt-1.5 h-3 w-3 rounded-full border-2 border-background",
-														isActive ? "bg-emerald-500" : "bg-primary",
-													)}
-												/>
-												<p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-													{formatPeriod(pos.startDate, pos.endDate, locale, presentLabel)}
-												</p>
-												<h3 className="font-medium mt-0.5">
-													{locale === "tr" ? pos.roleTr : pos.roleEn}
-												</h3>
-												<p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-													{locale === "tr" ? pos.descTr : pos.descEn}
-												</p>
-											</li>
-										);
-									})}
-								</ol>
-							</CardContent>
-						</Card>
-					</li>
+									<h4>{locale === "tr" ? pos.roleTr : pos.roleEn}</h4>
+									<p>{locale === "tr" ? pos.descTr : pos.descEn}</p>
+								</div>
+							))}
+						</div>
+					</div>
 				))}
 				{groups.length === 0 && (
-					<li className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
-						<Building2 className="h-10 w-10 text-muted-foreground/50" strokeWidth={1.5} />
-						<p className="text-muted-foreground">{t("career.empty")}</p>
-					</li>
+					<div className="placeholder">
+						<div className="big">{t("career.empty")}</div>
+					</div>
 				)}
-			</ol>
+			</div>
 		</div>
 	);
 }

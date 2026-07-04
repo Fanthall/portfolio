@@ -1,10 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
+import NextLink from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Github, Instagram, Linkedin, Mail } from "lucide-react";
 import { getAboutContent } from "@/lib/about";
 import { parseSkills } from "@/lib/skills";
-import { Card, CardContent } from "@/components/ui/card";
 import { getPageMetadata } from "@/lib/seo";
 import type { Locale } from "@/i18n/request";
 
@@ -15,7 +13,6 @@ interface SocialLinks {
 	linkedin?: string;
 	instagram?: string;
 	gmail?: string;
-	outlook?: string;
 }
 
 export default async function AboutPage() {
@@ -24,6 +21,8 @@ export default async function AboutPage() {
 	const about = await getAboutContent();
 	const title = locale === "tr" ? about?.titleTr : about?.titleEn;
 	const bio = locale === "tr" ? about?.bioTr : about?.bioEn;
+	const paragraphs = (bio ?? "").split("\n\n").filter(Boolean);
+	const skillGroups = parseSkills(about?.skills);
 	const socials = (about?.socialLinks ?? {}) as SocialLinks;
 
 	const socialLinks = [
@@ -33,86 +32,91 @@ export default async function AboutPage() {
 		socials.instagram && { href: socials.instagram, icon: Instagram, label: "Instagram" },
 	].filter(Boolean) as { href: string; icon: typeof Mail; label: string }[];
 
-	const skillGroups = parseSkills(about?.skills).map((g) => ({
-		title: locale === "tr" ? g.titleTr : g.titleEn,
-		items: g.items,
-	}));
+	const eduTr = [
+		{ h: "Bilgisayar Mühendisliği", s: "Eskişehir Osmangazi Üniversitesi", m: "Lisans" },
+		{ h: "Bilgisayar Programcılığı", s: "Pamukkale Üniversitesi · Okul birincisi", m: "Ön Lisans" },
+	];
+	const eduEn = [
+		{ h: "Computer Engineering", s: "Eskişehir Osmangazi University", m: "BSc" },
+		{ h: "Computer Programming", s: "Pamukkale University · Valedictorian", m: "Associate" },
+	];
+	const edu = locale === "tr" ? eduTr : eduEn;
 
 	return (
-		<div className="container mx-auto px-4 py-12 md:py-20 animate-fade-in">
-			{/* Hero */}
-			<section className="grid grid-cols-1 lg:grid-cols-[280px_1fr] items-start gap-10 lg:gap-16">
-				<div className="flex justify-center lg:justify-start">
-					{about?.photoUrl && (
-						<div className="relative h-56 w-56 md:h-64 md:w-64 lg:h-72 lg:w-72 overflow-hidden rounded-3xl ring-2 ring-border shadow-xl">
-							<Image
-								src={about.photoUrl}
-								alt={title ?? "Profile"}
-								fill
-								sizes="(min-width: 1024px) 18rem, 16rem"
-								className="object-cover"
-								priority
-							/>
-						</div>
+		<div className="wrap page">
+			<div className="page-head">
+				<span className="eyebrow">{t("header.about")}</span>
+				<h1>{title}</h1>
+			</div>
+
+			<div className="about-grid">
+				<div className="portrait">
+					<div className="corner" aria-hidden />
+					{about?.photoUrl ? (
+						// eslint-disable-next-line @next/next/no-img-element
+						<img src={about.photoUrl} alt={title ?? "Sezer Demir Dedek"} />
+					) : (
+						<span className="face">SD</span>
 					)}
 				</div>
 
-				<div className="space-y-5">
-					<div>
-						<p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-							{t("header.about")}
-						</p>
-						<h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
-							{title}
-						</h1>
+				<div>
+					<div className="about-bio">
+						{paragraphs.map((p, i) => (
+							<p key={i}>{p}</p>
+						))}
 					</div>
-					<p className="text-base md:text-lg leading-relaxed text-muted-foreground max-w-3xl whitespace-pre-line">
-						{bio}
-					</p>
+
+					<div style={{ marginTop: 26 }}>
+						{skillGroups.map((group) => (
+							<div className="skillgroup" key={group.titleEn}>
+								<div className="gt">{locale === "tr" ? group.titleTr : group.titleEn}</div>
+								<div className="gi">
+									{group.items.map((item) => (
+										<span key={item} className="tag-chip">
+											{item}
+										</span>
+									))}
+								</div>
+							</div>
+						))}
+					</div>
+
 					{socialLinks.length > 0 && (
-						<div className="flex flex-wrap gap-2 pt-2">
+						<div className="socials" style={{ marginLeft: 0, marginTop: 20 }}>
 							{socialLinks.map((link) => (
-								<Link
+								<NextLink
 									key={link.label}
 									href={link.href}
 									target={link.href.startsWith("http") ? "_blank" : undefined}
 									rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-									className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+									aria-label={link.label}
 								>
 									<link.icon className="h-4 w-4" />
-									<span>{link.label}</span>
-								</Link>
+								</NextLink>
 							))}
 						</div>
 					)}
-				</div>
-			</section>
 
-			{/* Skills */}
-			<section className="mt-20">
-				<h2 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-6">
-					{t("about.skillsTitle")}
-				</h2>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					{skillGroups.map((group) => (
-						<Card key={group.title}>
-							<CardContent className="p-6 space-y-3">
-								<h3 className="font-semibold">{group.title}</h3>
-								<ul className="flex flex-wrap gap-2">
-									{group.items.map((skill) => (
-										<li
-											key={skill}
-											className="inline-flex items-center rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
-										>
-											{skill}
-										</li>
-									))}
-								</ul>
-							</CardContent>
-						</Card>
-					))}
+					<div className="sec-head" style={{ marginTop: 34, marginBottom: 0 }}>
+						<div>
+							<span className="num">— {locale === "tr" ? "Eğitim" : "Education"}</span>
+							<h2 style={{ fontSize: "1.3rem" }}>{locale === "tr" ? "Okullar" : "Schools"}</h2>
+						</div>
+					</div>
+					<div className="edu">
+						{edu.map((e) => (
+							<div className="item" key={e.h}>
+								<div>
+									<h4>{e.h}</h4>
+									<div className="school">{e.s}</div>
+								</div>
+								<span className="meta">{e.m}</span>
+							</div>
+						))}
+					</div>
 				</div>
-			</section>
+			</div>
 		</div>
 	);
 }

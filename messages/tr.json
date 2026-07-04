@@ -59,9 +59,18 @@
 		"email": "E-posta",
 		"subject": "Konu",
 		"message": "Mesaj",
-		"send": "Gönder",
-		"success": "Mesajın gönderildi, teşekkürler.",
-		"error": "Mesaj gönderilemedi. Lütfen yeniden dene."
+		"send": "Mesaj gönder",
+		"success": "Mesajın gönderildi, teşekkürler. En kısa sürede dönerim.",
+		"error": "Mesaj gönderilemedi. Lütfen yeniden dene.",
+		"sending": "Gönderiliyor...",
+		"heading": "Birlikte iyi bir şey yapalım",
+		"lead": "Aşağıdaki formdan veya doğrudan kanallardan ulaşabilirsin. Genelde 1-2 gün içinde dönerim.",
+		"statusLabel": "Durum",
+		"statusValue": "Şu an müsait · Uzaktan",
+		"errName": "En az 2 karakter gir.",
+		"errEmail": "Geçerli bir e-posta gir.",
+		"errBody": "En az 5 karakter gir.",
+		"optional": "opsiyonel"
 	},
 	"notFound": {
 		"title": "Sayfa bulunamadı",

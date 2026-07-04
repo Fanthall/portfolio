@@ -1,13 +1,10 @@
-import Image from "next/image";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, Github } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "@/i18n/navigation";
 import { buildLanguageAlternates, localizeUrl } from "@/lib/site";
 import { getProjectBySlug } from "@/lib/data/queries";
-import { Button } from "@/components/ui/button";
 import { ProjectDemo } from "@/components/ProjectDemo";
 import type { Locale } from "@/i18n/routing";
 
@@ -39,70 +36,82 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 	const t = await getTranslations();
 
 	const project = await getProjectBySlug(slug);
-
 	if (!project) notFound();
 
 	const title = locale === "tr" ? project.titleTr : project.titleEn;
 	const summary = locale === "tr" ? project.summaryTr : project.summaryEn;
 	const desc = locale === "tr" ? project.descTr : project.descEn;
+	const year = project.createdAt.getFullYear();
 
 	return (
-		<div className="container mx-auto px-4 py-12 md:py-20 max-w-4xl animate-fade-in">
-			<Button variant="ghost" size="sm" asChild className="mb-6 -ml-2">
-				<Link href="/projects">
-					<ArrowLeft /> {t("common.backToProjects")}
-				</Link>
-			</Button>
+		<div className="wrap page">
+			<Link
+				href="/projects"
+				className="si-mono"
+				style={{ color: "var(--muted)", fontSize: "0.78rem", display: "inline-block", marginBottom: 18 }}
+			>
+				← {t("common.backToProjects")}
+			</Link>
 
-			<header className="space-y-4">
-				<h1 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h1>
-				<p className="text-lg text-muted-foreground">{summary}</p>
+			<div className="page-head" style={{ marginBottom: 24 }}>
+				<span className="eyebrow">
+					{year} · {project.tags.slice(0, 3).join(" · ")}
+				</span>
+				<h1>{title}</h1>
+				<p>{summary}</p>
+			</div>
+
+			<div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: 28 }}>
 				{project.tags.length > 0 && (
-					<ul className="flex flex-wrap gap-1.5" aria-label={t("projects.technologies")}>
+					<div className="tags">
 						{project.tags.map((tag) => (
-							<li
-								key={tag}
-								className="inline-flex items-center rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
-							>
+							<span key={tag} className="tag-chip">
 								{tag}
-							</li>
+							</span>
 						))}
-					</ul>
+					</div>
 				)}
 				{project.repoUrl && (
-					<Button variant="outline" size="sm" asChild>
-						<NextLink href={project.repoUrl} target="_blank" rel="noopener noreferrer">
-							<Github /> GitHub
-						</NextLink>
-					</Button>
+					<NextLink href={project.repoUrl} target="_blank" rel="noopener noreferrer" className="btn ghost">
+						GitHub ↗
+					</NextLink>
 				)}
-			</header>
+			</div>
 
 			{project.coverImage && (
-				<div className="relative mt-8 aspect-video w-full overflow-hidden rounded-xl border bg-muted">
-					<Image
+				<div
+					style={{
+						position: "relative",
+						aspectRatio: "16 / 9",
+						width: "100%",
+						overflow: "hidden",
+						borderRadius: 12,
+						border: "1px solid var(--line)",
+						marginBottom: 32,
+					}}
+				>
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img
 						src={project.coverImage}
 						alt={title}
-						fill
-						sizes="(min-width: 1024px) 56rem, 100vw"
-						className="object-cover"
-						priority
+						style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
 					/>
 				</div>
 			)}
 
-			<section className="mt-10 prose prose-zinc dark:prose-invert max-w-none">
+			<section className="prose prose-zinc max-w-none dark:prose-invert">
 				<ReactMarkdown>{desc}</ReactMarkdown>
 			</section>
 
-			<section className="mt-10">
+			<section style={{ marginTop: 40 }}>
 				<ProjectDemo
 					project={project}
 					locale={locale}
 					labels={{
 						downloadCta: locale === "tr" ? "İndir" : "Download",
 						openExternal: locale === "tr" ? "Aç" : "Open",
-						demoUnavailable: locale === "tr" ? "Demo henüz mevcut değil." : "Demo not available yet.",
+						demoUnavailable:
+							locale === "tr" ? "Demo henüz mevcut değil." : "Demo not available yet.",
 					}}
 				/>
 			</section>

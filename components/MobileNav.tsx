@@ -3,13 +3,12 @@
 import { Menu, X } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
 	items: { href: string; label: string }[];
 }
 
+/** Prototip nav.main ≤900px'te gizleniyor; burada hamburger menü (mono link). */
 export function MobileNav({ items }: MobileNavProps) {
 	const [open, setOpen] = useState(false);
 	const pathname = usePathname();
@@ -18,7 +17,6 @@ export function MobileNav({ items }: MobileNavProps) {
 		if (!open) return;
 		const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
 		document.addEventListener("keydown", onKey);
-		// Menü açıkken arka plan kaymasın
 		document.body.style.overflow = "hidden";
 		return () => {
 			document.removeEventListener("keydown", onKey);
@@ -27,24 +25,31 @@ export function MobileNav({ items }: MobileNavProps) {
 	}, [open]);
 
 	return (
-		<div className="md:hidden">
-			<Button
-				size="icon"
-				variant="ghost"
+		<div className="hidden max-[900px]:block">
+			<button
+				type="button"
+				className="iconbtn"
 				aria-label={open ? "Close menu" : "Open menu"}
 				onClick={() => setOpen((v) => !v)}
 			>
-				{open ? <X /> : <Menu />}
-			</Button>
+				{open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+			</button>
 			<div
-				className={cn(
-					"fixed inset-x-0 top-14 z-50 origin-top border-b bg-background shadow-lg transition-all duration-200",
-					open
-						? "opacity-100 translate-y-0"
-						: "pointer-events-none opacity-0 -translate-y-2",
-				)}
+				style={{
+					position: "fixed",
+					insetInline: 0,
+					top: 64,
+					zIndex: 49,
+					background: "var(--bg)",
+					borderBottom: "1px solid var(--line)",
+					boxShadow: "var(--shadow)",
+					transition: "opacity .2s, transform .2s",
+					opacity: open ? 1 : 0,
+					transform: open ? "translateY(0)" : "translateY(-8px)",
+					pointerEvents: open ? "auto" : "none",
+				}}
 			>
-				<nav className="container mx-auto flex flex-col gap-1 px-4 py-3">
+				<nav className="wrap" style={{ display: "flex", flexDirection: "column", padding: "12px 24px" }}>
 					{items.map((item) => {
 						const active =
 							item.href === "/"
@@ -56,12 +61,12 @@ export function MobileNav({ items }: MobileNavProps) {
 								href={item.href}
 								onClick={() => setOpen(false)}
 								aria-current={active ? "page" : undefined}
-								className={cn(
-									"rounded-md px-3 py-2 text-sm font-medium transition-colors",
-									active
-										? "bg-accent text-accent-foreground"
-										: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-								)}
+								style={{
+									fontFamily: '"JetBrains Mono", monospace',
+									fontSize: "0.85rem",
+									padding: "10px 0",
+									color: active ? "var(--accent)" : "var(--ink)",
+								}}
 							>
 								{item.label}
 							</Link>

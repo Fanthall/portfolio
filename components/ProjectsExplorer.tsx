@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FolderCode } from "lucide-react";
 import type { Project } from "@/lib/data/types";
 import type { Locale } from "@/i18n/routing";
 import { ProjectCard } from "@/components/ProjectCard";
@@ -17,7 +16,7 @@ interface ProjectsExplorerProps {
 	};
 }
 
-/** Projeler listesi — mono etiket filtre rail'i + boş durum (client). */
+/** Prototip view-projects — .filters rail + .proj-grid + boş durum (.placeholder). */
 export function ProjectsExplorer({ projects, locale, labels }: ProjectsExplorerProps) {
 	const [filter, setFilter] = useState<string>(labels.all);
 
@@ -34,48 +33,39 @@ export function ProjectsExplorer({ projects, locale, labels }: ProjectsExplorerP
 
 	return (
 		<>
-			<div className="mb-9 mt-7 flex flex-wrap gap-2">
-				{tags.map((tag) => {
-					const on = tag === filter;
-					return (
-						<button
-							key={tag}
-							type="button"
-							onClick={() => setFilter(tag)}
-							aria-pressed={on}
-							className={
-								"rounded-full border px-3.5 py-1.5 font-mono text-[0.76rem] transition-colors " +
-								(on
-									? "border-foreground bg-foreground text-background"
-									: "border-border bg-card text-muted-foreground hover:border-primary hover:text-foreground")
-							}
-						>
-							{tag}
-						</button>
-					);
-				})}
+			<div className="filters">
+				{tags.map((tag) => (
+					<button
+						key={tag}
+						type="button"
+						onClick={() => setFilter(tag)}
+						aria-pressed={tag === filter}
+						className={`filter${tag === filter ? " on" : ""}`}
+					>
+						{tag}
+					</button>
+				))}
 			</div>
 
 			{filtered.length > 0 ? (
-				<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-					{filtered.map((p, index) => (
+				<div className="proj-grid">
+					{filtered.map((p) => (
 						<ProjectCard
 							key={p.id}
 							project={p}
 							locale={locale}
-							index={index}
 							labels={{ viewDetails: labels.viewDetails }}
 						/>
 					))}
 				</div>
 			) : (
-				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-					<FolderCode className="h-10 w-10 text-muted-foreground/50" strokeWidth={1.5} />
-					<p className="text-muted-foreground">{labels.empty}</p>
+				<div className="placeholder">
+					<div className="icon">∅</div>
+					<div className="big">{labels.empty}</div>
 					<button
 						type="button"
+						className="btn ghost"
 						onClick={() => setFilter(labels.all)}
-						className="rounded-lg border border-border px-4 py-2 font-mono text-sm transition-colors hover:bg-secondary"
 					>
 						{labels.clearFilter}
 					</button>

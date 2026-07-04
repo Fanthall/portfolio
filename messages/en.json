@@ -59,9 +59,18 @@
 		"email": "Email",
 		"subject": "Subject",
 		"message": "Message",
-		"send": "Send",
-		"success": "Your message has been sent — thank you.",
-		"error": "The message could not be sent. Please try again."
+		"send": "Send message",
+		"success": "Your message has been sent — thank you. I'll get back to you soon.",
+		"error": "The message could not be sent. Please try again.",
+		"sending": "Sending...",
+		"heading": "Let's build something good together",
+		"lead": "Reach me via the form below or the direct channels. I usually reply within 1-2 days.",
+		"statusLabel": "Status",
+		"statusValue": "Available for work · Remote",
+		"errName": "Enter at least 2 characters.",
+		"errEmail": "Enter a valid email.",
+		"errBody": "Enter at least 5 characters.",
+		"optional": "optional"
 	},
 	"notFound": {
 		"title": "Page not found",

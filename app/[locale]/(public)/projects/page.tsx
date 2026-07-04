@@ -12,12 +12,12 @@ export default async function ProjectsPage() {
 	const projects = await getAllProjects();
 
 	return (
-		<div className="mx-auto max-w-[1180px] px-6 py-14 md:py-20">
-			<p className="eyebrow">{t("header.projects")}</p>
-			<h1 className="mt-2.5 font-display text-3xl font-semibold tracking-tight md:text-5xl">
-				{t("header.projects")}
-			</h1>
-			<p className="mt-3 max-w-[52ch] text-muted-foreground">{t("projects.lead")}</p>
+		<div className="wrap page">
+			<div className="page-head">
+				<span className="eyebrow">{t("header.projects")}</span>
+				<h1>{t("header.projects")}</h1>
+				<p>{t("projects.lead")}</p>
+			</div>
 
 			{projects.length > 0 ? (
 				<ProjectsExplorer
@@ -31,8 +31,9 @@ export default async function ProjectsPage() {
 					}}
 				/>
 			) : (
-				<div className="mt-10 flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-					<p className="text-muted-foreground">{t("projects.empty")}</p>
+				<div className="placeholder">
+					<div className="icon">∅</div>
+					<div className="big">{t("projects.empty")}</div>
 				</div>
 			)}
 		</div>
