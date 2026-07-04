@@ -42,3 +42,6 @@ INFRA-STATE.md
 
 # vercel
 .vercel
+
+# Local Netlify folder
+.netlify

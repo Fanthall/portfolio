@@ -140,10 +140,11 @@ export default async function HomePage() {
 		`${e.startDate.getFullYear()} — ${e.endDate ? e.endDate.getFullYear() : presentLabel}`;
 
 	return (
-		<div className="mx-auto max-w-[1180px] px-6">
+		<>
 			<StructuredData data={personSchema} />
 			<StructuredData data={websiteSchema} />
 
+			<div className="mx-auto max-w-[1180px] px-6">
 			{/* HERO */}
 			<section className="relative grid grid-cols-1 items-center gap-10 py-16 md:grid-cols-[1.5fr_1fr] md:py-20">
 				<span
@@ -174,13 +175,13 @@ export default async function HomePage() {
 					<div className="flex flex-wrap items-center gap-3 pt-1">
 						<Link
 							href="/projects"
-							className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-display text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+							className="inline-flex items-center gap-2 rounded-lg border border-primary bg-primary px-5 py-3 font-display text-[0.95rem] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
 							{t("home.viewAll")} <ArrowRight className="h-4 w-4" />
 						</Link>
 						<Link
 							href="/contact"
-							className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 font-display text-sm font-medium transition-colors hover:bg-secondary"
+							className="inline-flex items-center gap-2 rounded-lg border border-foreground px-5 py-3 font-display text-[0.95rem] font-medium transition-colors hover:bg-secondary"
 						>
 							{t("header.contact")}
 						</Link>
@@ -226,14 +227,12 @@ export default async function HomePage() {
 					</div>
 				</div>
 			</section>
+			</div>
 
-			{/* TECH MARQUEE */}
-			{techHighlights.length > 0 && (
-				<div className="-mx-6">
-					<TechMarquee items={techHighlights} />
-				</div>
-			)}
+			{/* TECH MARQUEE — tam ekran band (prototip gibi) */}
+			{techHighlights.length > 0 && <TechMarquee items={techHighlights} />}
 
+			<div className="mx-auto max-w-[1180px] px-6">
 			{/* 01 — SELECTED WORK */}
 			{featuredProjects.length > 0 && (
 				<section className="py-16 md:py-20">
@@ -387,13 +386,14 @@ export default async function HomePage() {
 						)}
 						<Link
 							href="/contact"
-							className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-display text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+							className="mt-6 inline-flex items-center gap-2 rounded-lg border border-primary bg-primary px-5 py-3 font-display text-[0.95rem] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
 							{t("contact.send")} <ArrowRight className="h-4 w-4" />
 						</Link>
 					</div>
 				</Reveal>
 			</section>
-		</div>
+			</div>
+		</>
 	);
 }
