@@ -5,9 +5,17 @@
  */
 import { createClient } from "@supabase/supabase-js";
 
-const LOCAL_URL = "http://127.0.0.1:54341";
-const LOCAL_KEY =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
+// Local demo key repoya GÖMÜLMEZ (evrensel demo key olsa da; secret tarayıcıları
+// tetikliyor). `npx supabase status` çıktısından SERVICE_ROLE_KEY alıp env ile geç:
+//   LOCAL_SUPABASE_SERVICE_KEY=$(npx supabase status -o env | grep SERVICE_ROLE_KEY | cut -d= -f2)
+const LOCAL_URL = process.env.LOCAL_SUPABASE_URL ?? "http://127.0.0.1:54341";
+const LOCAL_KEY = process.env.LOCAL_SUPABASE_SERVICE_KEY;
+if (!LOCAL_KEY) {
+	console.error(
+		"✗ LOCAL_SUPABASE_SERVICE_KEY eksik. `npx supabase status` çıktısındaki SERVICE_ROLE_KEY'i env olarak geç.",
+	);
+	process.exit(1);
+}
 
 const local = createClient(LOCAL_URL, LOCAL_KEY, { auth: { persistSession: false } });
 const cloud = createClient(
