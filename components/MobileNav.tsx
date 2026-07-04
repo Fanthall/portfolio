@@ -65,7 +65,7 @@ export function MobileNav({ items }: MobileNavProps) {
 									fontFamily: '"JetBrains Mono", monospace',
 									fontSize: "0.85rem",
 									padding: "10px 0",
-									color: active ? "var(--accent)" : "var(--ink)",
+									color: active ? "var(--si-accent)" : "var(--ink)",
 								}}
 							>
 								{item.label}

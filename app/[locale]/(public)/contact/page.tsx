@@ -52,7 +52,7 @@ export default async function ContactPage() {
 					))}
 					<div className="channel">
 						<span className="cl">{t("contact.statusLabel")}</span>
-						<span className="val" style={{ color: "var(--muted)" }}>
+						<span className="val" style={{ color: "var(--si-muted)" }}>
 							{t("contact.statusValue")}
 						</span>
 					</div>

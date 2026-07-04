@@ -67,7 +67,7 @@ export function ContactForm() {
 			<div className="field">
 				<label htmlFor="cf-subject">
 					{t("subject")}{" "}
-					<span style={{ textTransform: "none", color: "var(--muted)" }}>({t("optional")})</span>
+					<span style={{ textTransform: "none", color: "var(--si-muted)" }}>({t("optional")})</span>
 				</label>
 				<input id="cf-subject" name="subject" type="text" maxLength={200} />
 			</div>

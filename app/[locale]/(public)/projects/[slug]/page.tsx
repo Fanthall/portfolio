@@ -48,7 +48,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 			<Link
 				href="/projects"
 				className="si-mono"
-				style={{ color: "var(--muted)", fontSize: "0.78rem", display: "inline-block", marginBottom: 18 }}
+				style={{ color: "var(--si-muted)", fontSize: "0.78rem", display: "inline-block", marginBottom: 18 }}
 			>
 				← {t("common.backToProjects")}
 			</Link>
