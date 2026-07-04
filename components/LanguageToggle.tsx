@@ -19,7 +19,8 @@ export function LanguageToggle() {
 			type="button"
 			className="iconbtn"
 			disabled={isPending}
-			aria-label={t("language")}
+			aria-label={`${t("language")} — ${next.toUpperCase()}`}
+			title={`${locale.toUpperCase()} → ${next.toUpperCase()}`}
 			onClick={() =>
 				startTransition(() => {
 					router.replace(pathname, { locale: next });
@@ -27,7 +28,7 @@ export function LanguageToggle() {
 				})
 			}
 		>
-			{locale.toUpperCase()} <span style={{ opacity: 0.5 }}>/ {next.toUpperCase()}</span>
+			{locale.toUpperCase()}
 		</button>
 	);
 }
