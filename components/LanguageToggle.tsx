@@ -4,7 +4,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { useTransition } from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { Button } from "@/components/ui/button";
 
 export function LanguageToggle() {
 	const locale = useLocale() as Locale;
@@ -16,22 +15,19 @@ export function LanguageToggle() {
 	const next: Locale = locale === "tr" ? "en" : "tr";
 
 	return (
-		<Button
-			size="sm"
-			variant="ghost"
+		<button
+			type="button"
+			className="iconbtn"
 			disabled={isPending}
 			aria-label={t("language")}
 			onClick={() =>
 				startTransition(() => {
 					router.replace(pathname, { locale: next });
-					// Root layout'taki <html lang> server'da render ediliyor;
-					// soft navigasyonda yenilenmesi için refresh gerekli.
 					router.refresh();
 				})
 			}
 		>
-			<span className="font-semibold">{locale.toUpperCase()}</span>
-			<span className="text-muted-foreground">/ {next.toUpperCase()}</span>
-		</Button>
+			{locale.toUpperCase()} <span style={{ opacity: 0.5 }}>/ {next.toUpperCase()}</span>
+		</button>
 	);
 }

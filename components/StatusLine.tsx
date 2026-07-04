@@ -7,11 +7,7 @@ interface StatusLineProps {
 	remoteLabel: string;
 }
 
-/**
- * Hero "durum satırı" — müsaitlik + yerel saat (mono). Studio Ink imza öğesi.
- * Saat client'ta güncellenir; SSR/hydration uyuşmazlığı olmasın diye ilk
- * render'da boş, mount sonrası dolar.
- */
+/** Prototip .status — müsaitlik noktası + yerel saat (mono). */
 export function StatusLine({ availableLabel, remoteLabel }: StatusLineProps) {
 	const [time, setTime] = useState<string>("");
 
@@ -28,19 +24,14 @@ export function StatusLine({ availableLabel, remoteLabel }: StatusLineProps) {
 	}, []);
 
 	return (
-		<span className="inline-flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-1.5 font-mono text-xs text-muted-foreground">
-			<span className="relative flex h-2 w-2" aria-hidden>
-				<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-70" />
-				<span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-			</span>
-			<span>{availableLabel}</span>
-			<span aria-hidden>·</span>
-			<span>{remoteLabel}</span>
+		<span className="status">
+			<span className="dot" aria-hidden />
+			{availableLabel} · {remoteLabel}
 			{time && (
-				<>
-					<span aria-hidden>·</span>
-					<span suppressHydrationWarning>{time}</span>
-				</>
+				<span suppressHydrationWarning>
+					{" "}
+					· {time}
+				</span>
 			)}
 		</span>
 	);

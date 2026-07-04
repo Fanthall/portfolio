@@ -1,7 +1,6 @@
-import Image from "next/image";
 import NextLink from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, Github, Instagram, Linkedin, Mail } from "lucide-react";
+import { Github, Instagram, Linkedin, Mail } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import {
 	getAboutContent,
@@ -13,8 +12,6 @@ import { parseSkills } from "@/lib/skills";
 import { ProjectCard } from "@/components/ProjectCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { StatusLine } from "@/components/StatusLine";
-import { TechMarquee } from "@/components/TechMarquee";
-import { Reveal } from "@/components/motion/Reveal";
 import { StructuredData } from "@/components/StructuredData";
 import { getPageMetadata } from "@/lib/seo";
 import { getSiteUrl, localizeUrl } from "@/lib/site";
@@ -23,12 +20,8 @@ import type { Locale } from "@/i18n/routing";
 export const generateMetadata = () => getPageMetadata("HOME");
 
 const MAX_HERO_TECH = 10;
+const PROJECTS_WORKED = 7;
 
-/**
- * Stajları saymadan ilk işe başlama YILINDAN bugüne takvim yılı farkı.
- * Yıl bazlı olduğu için her yeni yılda otomatik +1 artar (ör. 2021 başlangıç
- * → 2026'da 5, 2027'de 6).
- */
 function experienceYears(experiences: { startDate: Date; roleTr: string }[]) {
 	const nonIntern = experiences.filter((e) => !e.roleTr.toLowerCase().includes("staj"));
 	const pool = nonIntern.length > 0 ? nonIntern : experiences;
@@ -39,10 +32,6 @@ function experienceYears(experiences: { startDate: Date; roleTr: string }[]) {
 	);
 	return Math.max(0, new Date().getFullYear() - earliest.getFullYear());
 }
-
-// Çalışılan (üzerinde çalışılmış) toplam proje sayısı — vitrindeki proje
-// sayısından bağımsız kişisel metrik. DB'deki proje sayısı bunu aşarsa o kullanılır.
-const PROJECTS_WORKED = 7;
 
 export default async function HomePage() {
 	const locale = (await getLocale()) as Locale;
@@ -65,7 +54,6 @@ export default async function HomePage() {
 	const title = locale === "tr" ? about?.titleTr : about?.titleEn;
 	const bio = locale === "tr" ? about?.bioTr : about?.bioEn;
 	const bioFirstParagraph = bio?.split("\n\n")[0] ?? "";
-	// Hero rol + alt-metin: DB (admin'den düzenlenebilir) → yoksa i18n fallback
 	const role = (locale === "tr" ? about?.roleTr : about?.roleEn)?.trim() || t("home.eyebrow");
 	const tagline =
 		(locale === "tr" ? about?.taglineTr : about?.taglineEn)?.trim() || t("home.subtitle");
@@ -103,10 +91,7 @@ export default async function HomePage() {
 		"@type": "Person",
 		name: "Sezer Demir DEDEK",
 		url: base,
-		jobTitle:
-			locale === "tr"
-				? "Front-End & AI Ajan Geliştirici"
-				: "Front-End & AI Agent Engineer",
+		jobTitle: role,
 		alumniOf: [
 			{ "@type": "CollegeOrUniversity", name: "Eskişehir Osmangazi Üniversitesi" },
 			{ "@type": "CollegeOrUniversity", name: "Pamukkale Üniversitesi" },
@@ -125,275 +110,206 @@ export default async function HomePage() {
 		inLanguage: locale === "tr" ? "tr-TR" : "en-US",
 	};
 
-	const stats = [
-		{ value: `${years}+`, label: t("home.stats.experience") },
-		{
-			value: `${about?.projectsWorked ?? Math.max(projectCount, PROJECTS_WORKED)}`,
-			label: t("home.stats.projects"),
-		},
-		{ value: `${companyCount}`, label: t("home.stats.companies") },
-	];
-
+	const projectsStat = about?.projectsWorked ?? Math.max(projectCount, PROJECTS_WORKED);
 	const presentLabel = t("career.present");
 	const topExperiences = (professional.length > 0 ? professional : experiences).slice(0, 4);
-	const formatSpan = (e: { startDate: Date; endDate: Date | null }) =>
-		`${e.startDate.getFullYear()} — ${e.endDate ? e.endDate.getFullYear() : presentLabel}`;
+	const marqueeItems = [...techHighlights, ...techHighlights];
 
 	return (
 		<>
 			<StructuredData data={personSchema} />
 			<StructuredData data={websiteSchema} />
 
-			<div className="mx-auto max-w-[1180px] px-6">
 			{/* HERO */}
-			<section className="relative grid grid-cols-1 items-center gap-10 py-16 md:grid-cols-[1.5fr_1fr] md:py-20">
-				<span
-					className="pointer-events-none absolute inset-x-[-50vw] inset-y-[-60px] -z-10 bg-[linear-gradient(hsl(var(--border)/0.5)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.5)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_65%_at_35%_32%,#000_20%,transparent_72%)]"
-					aria-hidden
-				/>
-				<div className="space-y-5">
-					<p className="eyebrow">{role}</p>
-					<h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
-						{title}
-					</h1>
-					<p className="max-w-prose text-lg text-muted-foreground">{tagline}</p>
+			<div className="wrap">
+				<section className="hero">
 					<div>
-						<StatusLine
-							availableLabel={t("home.available")}
-							remoteLabel={t("home.remote")}
-						/>
-					</div>
-					<p className="max-w-prose leading-relaxed">
-						{bioFirstParagraph}{" "}
-						<Link
-							href="/about"
-							className="inline-flex items-center gap-1 whitespace-nowrap font-mono text-sm text-primary hover:underline"
-						>
-							{t("home.readMore")} <ArrowRight className="h-3.5 w-3.5" />
-						</Link>
-					</p>
-					<div className="flex flex-wrap items-center gap-3 pt-1">
-						<Link
-							href="/projects"
-							className="inline-flex items-center gap-2 rounded-lg border border-primary bg-primary px-5 py-3 font-display text-[0.95rem] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-						>
-							{t("home.viewAll")} <ArrowRight className="h-4 w-4" />
-						</Link>
-						<Link
-							href="/contact"
-							className="inline-flex items-center gap-2 rounded-lg border border-foreground px-5 py-3 font-display text-[0.95rem] font-medium transition-colors hover:bg-secondary"
-						>
-							{t("header.contact")}
-						</Link>
-						{socialIconLinks.length > 0 && (
-							<div className="flex items-center gap-1">
-								{socialIconLinks.map((link) => (
-									<NextLink
-										key={link.label}
-										href={link.href}
-										target={link.href.startsWith("http") ? "_blank" : undefined}
-										rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-										aria-label={link.label}
-										className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
-									>
-										<link.icon className="h-4 w-4" />
-									</NextLink>
-								))}
-							</div>
-						)}
-					</div>
-				</div>
-
-				<div className="flex justify-center md:justify-end">
-					<div className="relative aspect-[4/5] w-full max-w-[300px] overflow-hidden rounded-2xl border border-border bg-[radial-gradient(hsl(var(--border))_1px,transparent_1.4px)] [background-size:18px_18px]">
-						<span
-							className="absolute right-0 top-0 h-11 w-11 bg-primary [clip-path:polygon(100%_0,0_0,100%_100%)]"
-							aria-hidden
-						/>
-						{about?.photoUrl ? (
-							<Image
-								src={about.photoUrl}
-								alt={title ?? "Sezer Demir DEDEK"}
-								fill
-								sizes="(min-width: 768px) 300px, 100vw"
-								className="object-cover"
-								priority
+						<span className="eyebrow">{role}</span>
+						<h1>{title}</h1>
+						<p className="lead">{tagline}</p>
+						<div>
+							<StatusLine
+								availableLabel={t("home.available")}
+								remoteLabel={t("home.remote")}
 							/>
+						</div>
+						<div className="cta">
+							<Link href="/projects" className="btn primary">
+								{t("home.viewAll")} →
+							</Link>
+							<Link href="/contact" className="btn ghost">
+								{t("header.contact")}
+							</Link>
+							{socialIconLinks.length > 0 && (
+								<div className="socials">
+									{socialIconLinks.map((link) => (
+										<NextLink
+											key={link.label}
+											href={link.href}
+											target={link.href.startsWith("http") ? "_blank" : undefined}
+											rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+											aria-label={link.label}
+										>
+											<link.icon className="h-4 w-4" />
+										</NextLink>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+
+					<div className="portrait">
+						<div className="corner" aria-hidden />
+						{about?.photoUrl ? (
+							// eslint-disable-next-line @next/next/no-img-element
+							<img src={about.photoUrl} alt={title ?? "Sezer Demir Dedek"} />
 						) : (
-							<span className="absolute inset-0 flex items-center justify-center font-display text-6xl font-bold text-border">
-								SD
-							</span>
+							<span className="face">SD</span>
 						)}
 					</div>
-				</div>
-			</section>
+				</section>
 			</div>
 
-			{/* TECH MARQUEE — tam ekran band (prototip gibi) */}
-			{techHighlights.length > 0 && <TechMarquee items={techHighlights} />}
+			{/* TECH MARQUEE — tam ekran band */}
+			{techHighlights.length > 0 && (
+				<div className="marquee" aria-hidden>
+					<div className="track">
+						{marqueeItems.map((tech, i) => (
+							<span key={`${tech}-${i}`}>{tech}</span>
+						))}
+					</div>
+				</div>
+			)}
 
-			<div className="mx-auto max-w-[1180px] px-6">
 			{/* 01 — SELECTED WORK */}
 			{featuredProjects.length > 0 && (
-				<section className="py-16 md:py-20">
-					<Reveal>
+				<section className="block">
+					<div className="wrap">
 						<SectionHeading
 							num="01"
 							label={t("home.sections.work")}
 							title={t("home.featuredTitle")}
 							more={{ href: "/projects", label: t("home.viewAll") }}
 						/>
-					</Reveal>
-					<div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-						{featuredProjects.map((p, index) => (
-							<Reveal key={p.id} delay={index * 0.08} className="h-full">
+						<div className="work-grid">
+							{featuredProjects.map((p, index) => (
 								<ProjectCard
+									key={p.id}
 									project={p}
 									locale={locale}
 									index={index}
 									labels={{ viewDetails: t("common.viewDetails") }}
 								/>
-							</Reveal>
-						))}
+							))}
+						</div>
 					</div>
 				</section>
 			)}
 
 			{/* 02 — BY THE NUMBERS */}
-			<section className="pb-16 md:pb-20">
-				<Reveal>
+			<section className="block" style={{ paddingTop: 0 }}>
+				<div className="wrap">
 					<SectionHeading num="02" label={t("home.sections.stats")} title={t("home.sections.stats")} />
-				</Reveal>
-				<Reveal>
-					<div className="grid grid-cols-1 sm:grid-cols-3">
-						{stats.map((stat, i) => (
-							<div
-								key={stat.label}
-								className={
-									i === 0
-										? "py-4 sm:pr-8"
-										: "border-t border-border py-4 sm:border-l sm:border-t-0 sm:px-8"
-								}
-							>
-								<p className="font-display text-4xl font-bold leading-none tracking-tight md:text-5xl">
-									{stat.value.replace(/\+$/, "")}
-									{stat.value.endsWith("+") && <span className="text-primary">+</span>}
-								</p>
-								<p className="mt-2.5 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-									{stat.label}
-								</p>
+					<div className="stats">
+						<div className="stat">
+							<div className="v">
+								{years}
+								<em>+</em>
 							</div>
-						))}
+							<div className="l">{t("home.stats.experience")}</div>
+						</div>
+						<div className="stat">
+							<div className="v">{projectsStat}</div>
+							<div className="l">{t("home.stats.projects")}</div>
+						</div>
+						<div className="stat">
+							<div className="v">{companyCount}</div>
+							<div className="l">{t("home.stats.companies")}</div>
+						</div>
 					</div>
-				</Reveal>
+				</div>
 			</section>
 
 			{/* 03 — EXPERIENCE */}
 			{topExperiences.length > 0 && (
-				<section className="pb-16 md:pb-20">
-					<Reveal>
+				<section className="block" style={{ paddingTop: 0 }}>
+					<div className="wrap">
 						<SectionHeading
 							num="03"
 							label={t("home.sections.experience")}
 							title={t("home.sections.experience")}
 							more={{ href: "/career", label: t("header.career") }}
 						/>
-					</Reveal>
-					<Reveal>
-						<div>
-							{topExperiences.map((e, i) => (
-								<div
-									key={e.id}
-									className={`grid grid-cols-1 items-baseline gap-2 py-4 sm:grid-cols-[160px_1fr_auto] sm:gap-5 ${
-										i > 0 ? "border-t border-border" : ""
-									}`}
-								>
-									<span className="font-mono text-sm text-muted-foreground">
-										{formatSpan(e)}
+						<div className="exp">
+							{topExperiences.map((e) => (
+								<div key={e.id} className="row">
+									<span className="when">
+										{e.startDate.getFullYear()} —{" "}
+										{e.endDate ? e.endDate.getFullYear() : presentLabel}
 									</span>
-									<div>
-										<h3 className="font-display font-semibold">
-											{locale === "tr" ? e.roleTr : e.roleEn}
-										</h3>
-										<span className="text-sm text-muted-foreground">
-											{e.companyName.split(" — ")[0]}
-										</span>
+									<div className="what">
+										<h4>{locale === "tr" ? e.roleTr : e.roleEn}</h4>
+										<span className="co">{e.companyName.split(" — ")[0]}</span>
 									</div>
 									{e.endDate === null ? (
-										<span className="inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-500/50 px-2 py-0.5 font-mono text-[0.68rem] text-emerald-600 dark:text-emerald-400">
-											<span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+										<span className="live">
+											<span className="dot" />
 											{t("career.active")}
 										</span>
 									) : (
-										<span className="hidden font-mono text-sm text-muted-foreground sm:inline">
-											—
-										</span>
+										<span className="when">—</span>
 									)}
 								</div>
 							))}
 						</div>
-					</Reveal>
+					</div>
 				</section>
 			)}
 
 			{/* 04 — ABOUT */}
-			<section className="pb-16 md:pb-20">
-				<Reveal>
+			<section className="block" style={{ paddingTop: 0 }}>
+				<div className="wrap">
 					<SectionHeading
 						num="04"
 						label={t("home.sections.about")}
 						title={t("home.sections.about")}
 						more={{ href: "/about", label: t("home.readMore") }}
 					/>
-				</Reveal>
-				<Reveal>
-					<div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-						<p className="leading-relaxed text-muted-foreground">{bioFirstParagraph}</p>
-						<div className="space-y-4">
+					<div className="about">
+						<div>
+							<p>{bioFirstParagraph}</p>
+						</div>
+						<div>
 							{parseSkills(about?.skills).map((group) => (
-								<div key={group.titleEn}>
-									<p className="mb-2 font-mono text-xs uppercase tracking-wider text-primary">
-										{locale === "tr" ? group.titleTr : group.titleEn}
-									</p>
-									<ul className="flex flex-wrap gap-1.5">
+								<div className="skillgroup" key={group.titleEn}>
+									<div className="gt">{locale === "tr" ? group.titleTr : group.titleEn}</div>
+									<div className="gi">
 										{group.items.map((item) => (
-											<li
-												key={item}
-												className="inline-flex items-center rounded border border-border bg-secondary px-2 py-0.5 font-mono text-[0.68rem]"
-											>
+											<span key={item} className="tag-chip">
 												{item}
-											</li>
+											</span>
 										))}
-									</ul>
+									</div>
 								</div>
 							))}
 						</div>
 					</div>
-				</Reveal>
+				</div>
 			</section>
 
 			{/* CONTACT BAND */}
-			<section className="pb-20">
-				<Reveal>
-					<div className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 text-center md:p-16">
-						<span className="absolute inset-x-0 top-0 h-1 bg-primary" aria-hidden />
-						<p className="eyebrow">05 — {t("header.contact")}</p>
-						<h2 className="mx-auto mt-3 max-w-2xl font-display text-2xl font-semibold tracking-tight md:text-4xl">
-							{t("home.letsWork")}
-						</h2>
-						{socials.gmail && (
-							<p className="mt-4 font-mono text-muted-foreground">{socials.gmail}</p>
-						)}
-						<Link
-							href="/contact"
-							className="mt-6 inline-flex items-center gap-2 rounded-lg border border-primary bg-primary px-5 py-3 font-display text-[0.95rem] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-						>
-							{t("contact.send")} <ArrowRight className="h-4 w-4" />
+			<section className="block" style={{ paddingTop: 0 }}>
+				<div className="wrap">
+					<div className="contact">
+						<span className="eyebrow">05 — {t("header.contact")}</span>
+						<h2 style={{ marginTop: 10 }}>{t("home.letsWork")}</h2>
+						{socials.gmail && <span className="em">{socials.gmail}</span>}
+						<Link href="/contact" className="btn primary">
+							{t("contact.send")} →
 						</Link>
 					</div>
-				</Reveal>
+				</div>
 			</section>
-			</div>
 		</>
 	);
 }

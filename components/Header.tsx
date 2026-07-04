@@ -1,5 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -23,26 +22,15 @@ export async function Header({ theme }: HeaderProps) {
 	const logoSrc = theme === "dark" ? "/assets/darkLogo.png" : "/assets/lightLogo.png";
 
 	return (
-		<header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-			<div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
-				<Link
-					href="/"
-					className="flex items-center gap-3 transition-opacity hover:opacity-80"
-				>
-					<Image
-						src={logoSrc}
-						alt="Sezer Demir DEDEK"
-						width={96}
-						height={96}
-						priority
-						className="h-11 w-11 object-contain"
-					/>
-					<span className="hidden font-display text-base font-semibold tracking-tight sm:inline">
-						Sezer Demir Dedek
-					</span>
+		<header className="si-header si">
+			<div className="wrap topbar">
+				<Link href="/" className="brand">
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img className="logo" src={logoSrc} alt="Sezer Demir Dedek" width={34} height={34} />
+					<span>Sezer Demir Dedek</span>
 				</Link>
 				<NavLinks items={navItems} />
-				<div className="flex items-center gap-1">
+				<div className="ctrls">
 					<LanguageToggle />
 					<ThemeToggle current={theme} />
 					<MobileNav items={navItems} />

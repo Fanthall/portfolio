@@ -9,7 +9,6 @@ interface SocialLinks {
 	linkedin?: string;
 	instagram?: string;
 	gmail?: string;
-	outlook?: string;
 }
 
 export async function Footer() {
@@ -33,21 +32,17 @@ export async function Footer() {
 	].filter(Boolean) as { href: string; icon: typeof Github; label: string }[];
 
 	return (
-		<footer className="mt-20 border-t">
-			<div className="container mx-auto flex flex-col gap-4 px-4 py-8 font-mono text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-				<p>{t("footer.copyright", { year })}</p>
-				<nav className="flex flex-wrap items-center gap-x-5 gap-y-1">
+		<footer className="si-footer si">
+			<div className="wrap foot">
+				<span>{t("footer.copyright", { year })}</span>
+				<nav style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
 					{navItems.map((item) => (
-						<Link
-							key={item.href}
-							href={item.href}
-							className="transition-colors hover:text-primary"
-						>
+						<Link key={item.href} href={item.href}>
 							{item.label}
 						</Link>
 					))}
 				</nav>
-				<div className="flex items-center gap-2">
+				<div className="socials">
 					{links.map((link) => (
 						<NextLink
 							key={link.label}
@@ -55,7 +50,6 @@ export async function Footer() {
 							target={link.href.startsWith("http") ? "_blank" : undefined}
 							rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
 							aria-label={link.label}
-							className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 						>
 							<link.icon className="h-4 w-4" />
 						</NextLink>
